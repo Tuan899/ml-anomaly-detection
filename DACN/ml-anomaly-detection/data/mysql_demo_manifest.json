@@ -1,0 +1,81 @@
+{
+  "provenance": "Synthetic MySQL activity demonstration fixtures, not measurements from a real MySQL server.",
+  "generator": "scripts/generate_mysql_demo.py",
+  "seed": 20261107,
+  "rows": 1440,
+  "sampling_interval_seconds": 60,
+  "recommended_train_fraction": 0.7,
+  "recommended_split_index": 1008,
+  "training_baseline": "Both datasets have identical normal chronological training rows; incidents occur only after the recommended split.",
+  "label_policy": {
+    "1": "normal, including bounded natural variation",
+    "-1": "explicitly injected incident"
+  },
+  "metric_definitions": {
+    "queries_per_second": "queries/second averaged over the sampling interval",
+    "connections": "active client connections sampled as a gauge",
+    "response_time_ms": "milliseconds for a lightweight probe; synthetic baseline in these fixtures",
+    "slow_queries": "count of slow queries during the sampling interval (delta Slow_queries), not a lifetime counter",
+    "connection_errors": "count of failed connection attempts during the sampling interval (delta Aborted_connects), not all MySQL error categories or a lifetime counter"
+  },
+  "scenario_policy": "scenario is test context only; neither labels nor scenario are model features",
+  "incidents": [
+    {
+      "scenario": "query_spike",
+      "start_index": 1051,
+      "end_index_exclusive": 1085,
+      "start_timestamp": "2026-10-01 17:31:00",
+      "end_timestamp": "2026-10-01 18:04:00",
+      "affected_metrics": [
+        "queries_per_second"
+      ]
+    },
+    {
+      "scenario": "connection_spike",
+      "start_index": 1137,
+      "end_index_exclusive": 1172,
+      "start_timestamp": "2026-10-01 18:57:00",
+      "end_timestamp": "2026-10-01 19:31:00",
+      "affected_metrics": [
+        "connections"
+      ]
+    },
+    {
+      "scenario": "latency_spike",
+      "start_index": 1224,
+      "end_index_exclusive": 1258,
+      "start_timestamp": "2026-10-01 20:24:00",
+      "end_timestamp": "2026-10-01 20:57:00",
+      "affected_metrics": [
+        "response_time_ms"
+      ]
+    },
+    {
+      "scenario": "combined_pressure",
+      "start_index": 1319,
+      "end_index_exclusive": 1362,
+      "start_timestamp": "2026-10-01 21:59:00",
+      "end_timestamp": "2026-10-01 22:41:00",
+      "affected_metrics": [
+        "queries_per_second",
+        "connections",
+        "response_time_ms",
+        "slow_queries",
+        "connection_errors"
+      ]
+    }
+  ],
+  "files": {
+    "mysql_normal.csv": {
+      "rows": 1440,
+      "anomalies": 0,
+      "sha256": "210f4cd42987a4cda6fd4b8c95d7b2511f8cffa28dfca693824e0249ebc33492"
+    },
+    "mysql_anomalous.csv": {
+      "rows": 1440,
+      "anomalies": 146,
+      "sha256": "902f62b9febc762641be741c7c7557106130799d44020ad01bc79cb8d3ec5a15"
+    }
+  },
+  "limitations": "Designed functional tests with separated incident magnitudes; performance must be recomputed and cannot establish effectiveness on real workloads."
+}

@@ -29,6 +29,9 @@ def error_message(error: Exception) -> str:
     if isinstance(error, pd.errors.ParserError):
         return "Các dòng CSV có số cột không khớp. Hãy kiểm tra dấu phẩy, dấu ngoặc kép và dòng tiêu đề."
     translations = (
+        (("missing mysql activity",), "CSV MySQL cần đủ năm cột: queries_per_second, connections, response_time_ms, slow_queries và connection_errors. Kiểm tra tên cột và thử lại."),
+        (("finite nonnegative", "mysql metric"), "Cả năm chỉ số MySQL phải là số hữu hạn không âm, không chứa ô trống hoặc giá trị đúng/sai. Lần chạy đã dừng, không tự thay hoặc bỏ dòng."),
+        (("notebook reference", "bundled notebook"), "Chế độ notebook cần đúng bộ NAB CPU gốc gồm 4.032 dòng. Hãy chọn mẫu NAB đầy đủ; với dữ liệu khác, tắt cấu hình notebook để phân tích tùy chỉnh."),
         (("empty", "contain data rows", "no columns to parse"), "CSV chưa có dữ liệu. Hãy thêm dòng tiêu đề và ít nhất 4 dòng đo."),
         (("column names must be unique", "duplicate column"), "Tên cột bị trùng. Hãy đặt tên riêng cho từng cột trong CSV."),
         (("row fields",), "Số trường trên các dòng CSV không khớp tiêu đề. Hãy kiểm tra dấu phẩy và số cột."),
@@ -56,6 +59,14 @@ def error_message(error: Exception) -> str:
 
 def warning_message(message: str) -> str:
     """Keep research limitations visible in the user's language."""
+    if message.startswith("Notebook MAD fits"):
+        return "MAD tính trung vị và độ lệch trên cả 4.032 điểm, gồm cả phần kiểm tra. Đây là thống kê mô tả toàn chuỗi, chưa chứng minh khả năng dự đoán dữ liệu mới."
+    if message.startswith("The separate notebook MAD"):
+        return "MAD toàn chuỗi đánh giá 4.032 điểm; bảng so sánh chung chỉ đánh giá 482 điểm cuối. Cần ghi rõ phạm vi khi báo cáo."
+    if message.startswith("The fixed 3550/482"):
+        return "Tập huấn luyện có 1 nhãn bất thường; tập kiểm tra có 1 nhãn bất thường. Dữ liệu huấn luyện chưa hoàn toàn sạch."
+    if message.startswith("Metrics use exact point"):
+        return "Đánh giá theo đúng hai thời điểm được gắn nhãn; đây không phải cách chấm điểm cửa sổ bất thường chính thức của NAB."
     if message.startswith("Small dataset"):
         return "Dữ liệu có dưới 100 dòng: phù hợp để thử thao tác, chưa đủ để kết luận chất lượng phát hiện."
     if message.startswith("No ground-truth"):

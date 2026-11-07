@@ -22,7 +22,10 @@ SAMPLE_DIR = PROJECT_ROOT / "data" / "kiem_thu"
 APP_PATH = PROJECT_ROOT / "frontend" / "app.py"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from http_transport import APITransport
 from src.data_prep import read_csv_frame
 from src.pipeline import run_detection
 
@@ -123,7 +126,13 @@ class DeliveredSamplePipelineTests(unittest.TestCase):
 
 class DeliveredSampleUploadTests(unittest.TestCase):
     def setUp(self) -> None:
+        self.transport = APITransport().__enter__()
+        self.addCleanup(self.transport.__exit__, None, None, None)
         self.app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+        self.assert_no_exception()
+        self.app.radio(key="interface_mode").set_value("Nâng cao").run()
+        self.assert_no_exception()
+        self.app.radio(key="workspace_mode").set_value("CSV một chỉ số / notebook NAB").run()
         self.assert_no_exception()
 
     def assert_no_exception(self) -> None:
@@ -155,6 +164,9 @@ class DeliveredSampleUploadTests(unittest.TestCase):
         self.upload("02_bat_thuong_co_nhan.csv")
         self.select_label()
         self.run_analysis()
+        self.transport.mock_post.assert_called_once()
+        self.assertEqual("is_anomaly", self.transport.requests[0].url.params["label_col"])
+        self.assertEqual("/detect", self.transport.requests[0].url.path)
         self.assertEqual([], list(self.app.error))
         result = self.app.session_state["detection_run"]
         self.assertEqual(140, result.metadata["train_rows"])

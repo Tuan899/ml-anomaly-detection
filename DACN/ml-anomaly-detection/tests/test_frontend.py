@@ -12,6 +12,7 @@ from pathlib import Path
 import sys
 import unittest
 
+import httpx
 import pandas as pd
 from streamlit.testing.v1 import AppTest
 
@@ -20,8 +21,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 APP_PATH = PROJECT_ROOT / "frontend" / "app.py"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from frontend.helpers import metric_candidates
+from http_transport import APITransport
 
 
 def csv_fixture(
@@ -41,7 +45,18 @@ def csv_fixture(
 
 class FrontendWorkflowTests(unittest.TestCase):
     def setUp(self) -> None:
+        self.transport = APITransport().__enter__()
+        self.addCleanup(self.transport.__exit__, None, None, None)
         self.app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+        self.assert_no_exception()
+        self.app.radio(key="interface_mode").set_value("Nâng cao").run()
+        self.assert_no_exception()
+        self.app.radio(key="workspace_mode").set_value("CSV một chỉ số / notebook NAB").run()
+        self.assert_no_exception()
+        # Keep these tests on the small editable workflow so their validation,
+        # optional-label, and model-configuration coverage remains meaningful.
+        sample = self.app.selectbox(key="sample_dataset")
+        sample.set_value("Mẫu ngắn · 19 điểm").run()
         self.assert_no_exception()
 
     def assert_no_exception(self) -> None:
@@ -75,9 +90,13 @@ class FrontendWorkflowTests(unittest.TestCase):
         self.assertTrue(any("Hướng dẫn sử dụng" in item.label for item in self.app.expander))
         self.assertTrue(any("1. Chọn dữ liệu" == item.value for item in self.app.subheader))
         self.assertTrue(any("2. Cấu hình phân tích" == item.value for item in self.app.header))
+        self.transport.mock_post.assert_not_called()
 
-    def test_default_sample_runs_all_models_and_shows_current_results(self) -> None:
+    def test_short_sample_runs_all_models_and_shows_current_results(self) -> None:
         self.run_analysis(mad_only=False)
+        self.transport.mock_post.assert_called_once()
+        self.assertEqual("/detect", self.transport.requests[0].url.path)
+        self.assertEqual("true", self.transport.requests[0].url.params["include_context"])
         self.assertEqual([], list(self.app.error))
         self.assertEqual(2, len(self.app.download_button))
         self.assertEqual(["Tổng quan", "Chi tiết", "Đánh giá", "Hướng dẫn"], [tab.label for tab in self.app.tabs])
@@ -91,6 +110,91 @@ class FrontendWorkflowTests(unittest.TestCase):
         for item in self.app.warning:
             self.assertNotIn("Small dataset:", item.value)
             self.assertNotIn("No ground-truth labels", item.value)
+
+    def test_settings_and_uploaded_bytes_are_sent_to_backend_only_on_run(self) -> None:
+        content = csv_fixture(timestamp="observed_at", value="cpu_load")
+        self.upload(content, filename="cpu.csv")
+        self.app.multiselect(key="selected_models").set_value(["mad", "lof"]).run()
+        self.app.slider(key="train_fraction").set_value(80).run()
+        self.app.slider(key="contamination").set_value(2.5).run()
+        self.app.checkbox(key="include_time").set_value(True).run()
+        self.transport.mock_post.assert_not_called()
+
+        self.run_analysis(mad_only=False)
+        self.assertEqual([], list(self.app.error))
+        self.transport.mock_post.assert_called_once()
+        request = self.transport.requests[0]
+        self.assertEqual("/detect", request.url.path)
+        self.assertEqual("observed_at", request.url.params["timestamp_col"])
+        self.assertEqual("cpu_load", request.url.params["value_col"])
+        self.assertEqual("mad,lof", request.url.params["models"])
+        self.assertEqual("true", request.url.params["include_time"])
+        self.assertEqual("true", request.url.params["include_context"])
+        self.assertAlmostEqual(.8, float(request.url.params["train_fraction"]))
+        self.assertAlmostEqual(.025, float(request.url.params["contamination"]))
+        self.assertNotIn("label_col", request.url.params)
+        self.assertIn(b'filename="cpu.csv"', request.content)
+        self.assertIn(content, request.content)
+        result = self.app.session_state["detection_run"]
+        self.assertEqual(["mad", "lof"], result.metadata["model_names"])
+        self.assertEqual("cpu_load", result.metadata["value_col"])
+
+    def test_backend_offline_explains_connection_error_and_has_no_results(self) -> None:
+        self.transport.mock_post.side_effect = httpx.ConnectError("connection refused")
+        self.run_analysis()
+        self.transport.mock_post.assert_called_once()
+        self.assertTrue(any("Không kết nối được BE" in item.value for item in self.app.error))
+        self.assert_no_export()
+        self.assertEqual(0, len(self.app.metric))
+        self.assertNotIn("detection_run", self.app.session_state)
+
+    def test_backend_timeout_explains_retry_and_has_no_results(self) -> None:
+        self.transport.mock_post.side_effect = httpx.ReadTimeout("read timed out")
+        self.run_analysis()
+        self.assertTrue(any("BE xử lý quá lâu" in item.value for item in self.app.error))
+        self.assert_no_export()
+        self.assertEqual(0, len(self.app.metric))
+        self.assertNotIn("detection_run", self.app.session_state)
+
+    def test_backend_server_error_is_readable_without_leaking_response_body(self) -> None:
+        self.transport.mock_post.side_effect = None
+        self.transport.mock_post.return_value = httpx.Response(
+            500, text="INTERNAL_PRIVATE_TRACEBACK", request=httpx.Request("POST", "http://testserver/detect")
+        )
+        self.run_analysis()
+        messages = " ".join(item.value for item in self.app.error)
+        self.assertIn("BE", messages)
+        self.assertNotIn("INTERNAL_PRIVATE_TRACEBACK", messages)
+        self.assert_no_export()
+        self.assertEqual(0, len(self.app.metric))
+        self.assertNotIn("detection_run", self.app.session_state)
+
+    def test_failed_retry_with_same_settings_clears_previous_results_and_exports(self) -> None:
+        self.run_analysis()
+        self.assertEqual(2, len(self.app.download_button))
+        signature = self.app.session_state["detection_signature"]
+        self.transport.mock_post.side_effect = httpx.ConnectError("connection refused")
+        self.run_analysis()
+        self.assertEqual(2, self.transport.mock_post.call_count)
+        self.assertTrue(any("Không kết nối được BE" in item.value for item in self.app.error))
+        self.assert_no_export()
+        self.assertEqual(0, len(self.app.metric))
+        self.assertNotIn("detection_run", self.app.session_state)
+        self.assertNotIn("detection_signature", self.app.session_state)
+
+        # A display-only rerun must not silently restore the old successful run.
+        self.app.toggle(key="dark_mode").set_value(True).run()
+        self.assert_no_exception()
+        self.assert_no_export()
+        self.assertEqual(2, self.transport.mock_post.call_count)
+
+        # Once the backend is available, the same configuration can run again.
+        self.transport.mock_post.side_effect = self.transport.post
+        self.run_analysis()
+        self.assertEqual([], list(self.app.error))
+        self.assertEqual(2, len(self.app.download_button))
+        self.assertEqual(signature, self.app.session_state["detection_signature"])
+        self.assertEqual(3, self.transport.mock_post.call_count)
 
     def test_no_algorithm_disables_analysis_and_explains_next_step(self) -> None:
         self.app.multiselect(key="selected_models").set_value([]).run()

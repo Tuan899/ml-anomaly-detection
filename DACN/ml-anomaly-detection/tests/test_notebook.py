@@ -1,6 +1,7 @@
 """Execute the saved notebook without browser, display or fabricated outputs."""
 
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -38,24 +39,40 @@ with contextlib.redirect_stdout(captured), patch.object(plt, "show", side_effect
 
 run = namespace["run"]
 assert namespace["ROOT"] == notebook_path.parent.parent
-assert run.metadata["rows"] == 19
-assert run.metadata["train_rows"] == 13
-assert run.metadata["test_rows"] == 6
-assert set(run.metadata["model_names"]) == {"mad", "isolation_forest", "lof", "one_class_svm"}
+assert run.metadata["rows"] == 4032
+assert run.metadata["train_rows"] == 3550
+assert run.metadata["test_rows"] == 482
+assert set(run.metadata["model_names"]) == {"mad", "isolation_forest", "lof"}
 assert run.metadata["features"] == ["value"]
-for parameters in run.metadata["parameters"].values():
-    assert parameters["preprocessing"]["fit_rows"] == 13
-    np.testing.assert_allclose(parameters["preprocessing"]["mean"], [run.frame.iloc[:13]["value"].mean()])
-np.testing.assert_array_equal(run.predictions["timestamp"], run.frame.iloc[13:]["timestamp"])
-assert namespace["test_annotation_count"] == 0
-assert not namespace["quality_supported"]
-assert namespace["metrics_table"].empty
-assert any("no anomalies" in warning for warning in run.metadata["warnings"])
-assert "Chưa hiển thị precision/recall/F1" in captured.getvalue()
-assert len(namespace["trend_plot"].data) > 0
-assert len(namespace["seasonality_plot"].data) > 0
+assert run.metadata["contamination"] == 1 / 3550
+assert run.metadata["random_state"] == 42
+assert "StandardScaler" not in json.dumps(run.metadata["parameters"])
+np.testing.assert_array_equal(run.predictions["timestamp"], run.frame.iloc[3550:]["timestamp"])
+assert (run.frame.iloc[:3550]["is_anomaly"] == -1).sum() == 1
+assert (run.predictions["is_anomaly"] == -1).sum() == 1
+assert {value.strftime("%Y-%m-%d %H:%M:%S")
+        for value in run.frame.loc[run.frame["is_anomaly"] == -1, "timestamp"]} == {
+            "2014-02-26 22:05:00", "2014-02-27 17:15:00"}
+baseline = run.metadata["reference_baseline"]
+assert baseline["fit_rows"] == 4032
+assert baseline["rows"] == 4032
+assert len(baseline["predictions"]) == 4032
+assert np.asarray(baseline["confusion_matrix"]).sum() == 4032
+np.testing.assert_array_equal(
+    namespace["baseline_predictions"]["mad_prediction"].iloc[3550:],
+    run.predictions["mad_prediction"],
+)
+for name in run.metadata["model_names"]:
+    matrix = np.asarray(run.metadata["confusion_matrices"][name])
+    assert matrix.sum() == 482
+    assert matrix[1].sum() == 1
+assert namespace["test_annotation_count"] == 1
+assert namespace["quality_supported"]
+assert namespace["metrics_table"].shape == (3, 3)
+assert namespace["reference_metrics_table"]["số_điểm_đánh_giá"].tolist() == [4032, 482, 482]
+assert "MAD vẫn dùng thống kê toàn bộ dữ liệu" in captured.getvalue()
 plt.close("all")
-print("Notebook cells completed: 19 rows, 13 train, 6 test; no quality claim.")
+print("Notebook cells completed: 4032 rows, 3550 train, 482 test; evaluation scopes explicit.")
 '''
 
 
@@ -73,7 +90,8 @@ class NotebookTests(unittest.TestCase):
             with self.subTest(cwd=directory):
                 completed = subprocess.run(
                     [sys.executable, "-c", EXECUTE_NOTEBOOK, str(NOTEBOOK)],
-                    cwd=directory, capture_output=True, text=True, timeout=60,
+                    cwd=directory, capture_output=True, text=True, encoding="utf-8", timeout=90,
+                    env={**os.environ, "PYTHONIOENCODING": "utf-8"},
                 )
                 self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
                 self.assertIn("Notebook cells completed", completed.stdout)

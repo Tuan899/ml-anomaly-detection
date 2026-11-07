@@ -34,6 +34,76 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(len(payload["predictions"]), 1)
         self.assertEqual(payload["models"], payload["anomalies"])
         self.assertEqual(payload["metrics"]["mad"]["f1"], 1.0)
+        self.assertNotIn("context", payload)
+        self.assertEqual(payload["predictions"][0]["timestamp"], "2026-01-04T00:00:00.000")
+
+    def test_context_returns_full_timeline_without_expanding_predictions(self):
+        response = self.client.post(
+            "/detect",
+            params={"models": "mad", "split_index": 3, "include_context": True},
+            files={"file": ("sample.csv", CSV, "text/csv")},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        payload = response.json()
+        self.assertEqual(len(payload["context"]), payload["rows"])
+        self.assertEqual(len(payload["context"]), 4)
+        self.assertEqual(len(payload["predictions"]), payload["metadata"]["test_rows"])
+        self.assertEqual(len(payload["predictions"]), 1)
+        self.assertEqual(set(payload["context"][0]), {"timestamp", "value"})
+        self.assertEqual(payload["context"][0]["timestamp"], "2026-01-01T00:00:00.000000000")
+        self.assertEqual(payload["context"][-1]["timestamp"], payload["predictions"][0]["timestamp"])
+        self.assertEqual(payload["models"], payload["anomalies"])
+
+    def test_context_uses_selected_columns_and_cleaned_chronological_rows(self):
+        csv = (
+            b"observed_at,cpu,truth,unselected\n"
+            b"2026-01-05,99,-1,discard\n"
+            b"2026-01-02,2,1,discard\n"
+            b"2026-01-01,1,1,discard\n"
+            b"2026-01-03,1,1,discard\n"
+            b"2026-01-04,missing,1,discard\n"
+        )
+        response = self.client.post(
+            "/detect",
+            params={"models": "mad", "split_index": 3, "include_context": True,
+                    "timestamp_col": "observed_at", "value_col": "cpu", "label_col": "truth"},
+            files={"file": ("custom.csv", csv, "text/csv")},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        payload = response.json()
+        self.assertEqual(payload["metadata"]["cleaning"]["dropped_rows"], 1)
+        self.assertEqual(payload["context"], [
+            {"observed_at": "2026-01-01T00:00:00.000000000", "cpu": 1.0, "truth": 1},
+            {"observed_at": "2026-01-02T00:00:00.000000000", "cpu": 2.0, "truth": 1},
+            {"observed_at": "2026-01-03T00:00:00.000000000", "cpu": 1.0, "truth": 1},
+            {"observed_at": "2026-01-05T00:00:00.000000000", "cpu": 99.0, "truth": -1},
+        ])
+        self.assertEqual(len(payload["predictions"]), 1)
+        self.assertEqual(payload["predictions"][0]["observed_at"], payload["context"][-1]["observed_at"])
+        self.assertEqual(payload["metrics"]["mad"]["f1"], 1.0)
+
+    def test_context_preserves_distinct_submillisecond_timestamps(self):
+        timestamps = [f"2026-01-01T00:00:00.00000000{index}" for index in range(1, 6)]
+        csv = ("timestamp,value\n" + "\n".join(
+            f"{timestamp},{value}" for timestamp, value in zip(timestamps, [1, 2, 1, 99, 2])
+        )).encode()
+        response = self.client.post(
+            "/detect", params={"models": "mad", "split_index": 3, "include_context": True},
+            files={"file": ("high_precision.csv", csv, "text/csv")},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        payload = response.json()
+        self.assertEqual([row["timestamp"] for row in payload["context"]], timestamps)
+        self.assertEqual([row["timestamp"] for row in payload["predictions"]], timestamps[3:])
+        self.assertEqual(len({row["timestamp"] for row in payload["context"]}), 5)
+
+    def test_context_is_omitted_when_explicitly_disabled(self):
+        response = self.client.post(
+            "/detect", params={"models": "mad", "split_index": 3, "include_context": False},
+            files={"file": ("sample.csv", CSV, "text/csv")},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertNotIn("context", response.json())
 
     def test_invalid_upload_and_parameters_return_422(self):
         cases = [
