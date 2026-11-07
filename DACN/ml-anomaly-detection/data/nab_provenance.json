@@ -1,0 +1,21 @@
+{
+  "path": "DACN/ml-anomaly-detection/data/ec2_cpu_utilization.csv",
+  "rows": 4032,
+  "sha256": "ab446fbd8b9f37507eb2fdb06315826d8daeef02e241133ce06e0ee571ba53d9",
+  "source_url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv",
+  "source_commit": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+  "labels_url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/labels/combined_labels.json",
+  "labels_sha256": "0d410ae8659267c7a2937ce45abcd342bbc6c405005bd4c6bf6cc22a3c4fa2d6",
+  "labeled_sha256": "ed5f5367af26b523157c532282b31e1376571f29c38755f17b44373e85f18412",
+  "anomaly_labels": [
+    "2014-02-26 22:05:00",
+    "2014-02-27 17:15:00"
+  ],
+  "anomaly_count": 2,
+  "retrieved_at_utc": "2026-11-01T12:17:46.803940+00:00",
+  "first_timestamp": "2014-02-14 14:30:00",
+  "last_timestamp": "2014-02-28 14:25:00",
+  "license_url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/LICENSE.txt",
+  "license_sha256": "75c05fe5a01d11fc90e6ceadd65feb03d33c9b83035b373ce2c31c358542143e",
+  "note": "AWS EC2 CPU metric in original source scale. Exact point labels; not official NAB window scoring."
+}

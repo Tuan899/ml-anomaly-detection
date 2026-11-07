@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="496" viewBox="0 0 1180 496">
+<rect width="100%" height="100%" rx="12" fill="#111827"/>
+<circle cx="28" cy="28" r="7" fill="#ef4444"/><circle cx="52" cy="28" r="7" fill="#f59e0b"/><circle cx="76" cy="28" r="7" fill="#22c55e"/>
+<text x="110" y="36" fill="#e5e7eb" font-family="Arial" font-size="21" font-weight="bold">Hu?n luy?n m? h?nh</text>
+<text x="32" y="82" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">models = {</text>
+<text x="32" y="116" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    "isolation_forest": IsolationForest(</text>
+<text x="32" y="150" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">        contamination=contamination, random_state=42),</text>
+<text x="32" y="184" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    "lof": LocalOutlierFactor(</text>
+<text x="32" y="218" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">        contamination=contamination, novelty=True),</text>
+<text x="32" y="252" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    "one_class_svm": OneClassSVM(</text>
+<text x="32" y="286" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">        nu=contamination, kernel="rbf"),</text>
+<text x="32" y="320" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">}</text>
+<text x="32" y="354" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">for name, model in models.items():</text>
+<text x="32" y="388" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    model.fit(train)</text>
+<text x="32" y="422" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    predictions = model.predict(test)</text>
+<text x="32" y="456" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    scores = model.decision_function(test)</text>
+</svg>

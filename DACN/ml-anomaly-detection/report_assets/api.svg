@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="326" viewBox="0 0 1180 326">
+<rect width="100%" height="100%" rx="12" fill="#111827"/>
+<circle cx="28" cy="28" r="7" fill="#ef4444"/><circle cx="52" cy="28" r="7" fill="#f59e0b"/><circle cx="76" cy="28" r="7" fill="#22c55e"/>
+<text x="110" y="36" fill="#e5e7eb" font-family="Arial" font-size="21" font-weight="bold">FastAPI endpoint</text>
+<text x="32" y="82" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">@app.post("/detect")</text>
+<text x="32" y="116" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">async def detect(file: UploadFile = File(...)):</text>
+<text x="32" y="150" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    frame = load_timeseries(</text>
+<text x="32" y="184" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">        BytesIO(await file.read()))</text>
+<text x="32" y="218" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    features = build_feature_matrix(frame, value_name)</text>
+<text x="32" y="252" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    results = fit_models(train, test, contamination)</text>
+<text x="32" y="286" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">    return {"rows": len(frame), "models": payload}</text>
+</svg>

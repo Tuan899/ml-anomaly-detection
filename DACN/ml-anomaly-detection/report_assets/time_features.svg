@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="360" viewBox="0 0 1180 360">
+<rect width="100%" height="100%" rx="12" fill="#111827"/>
+<circle cx="28" cy="28" r="7" fill="#ef4444"/><circle cx="52" cy="28" r="7" fill="#f59e0b"/><circle cx="76" cy="28" r="7" fill="#22c55e"/>
+<text x="110" y="36" fill="#e5e7eb" font-family="Arial" font-size="21" font-weight="bold">T?o ??c tr?ng th?i gian</text>
+<text x="32" y="82" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">timestamps = pd.to_datetime(result[timestamp_col])</text>
+<text x="32" y="116" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">result["hour"] = timestamps.dt.hour</text>
+<text x="32" y="150" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">result["day_of_week"] = timestamps.dt.dayofweek</text>
+<text x="32" y="184" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">result["is_weekend"] = (result["day_of_week"] &gt;= 5).astype(int)</text>
+<text x="32" y="218" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">result["hour_sin"] = np.sin(2 * np.pi * result["hour"] / 24)</text>
+<text x="32" y="252" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">result["hour_cos"] = np.cos(2 * np.pi * result["hour"] / 24)</text>
+<text x="32" y="286" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">result["dow_sin"] = np.sin(2 * np.pi * result["day_of_week"] / 7)</text>
+<text x="32" y="320" fill="#d1d5db" font-family="Consolas, monospace" font-size="18">result["dow_cos"] = np.cos(2 * np.pi * result["day_of_week"] / 7)</text>
+</svg>

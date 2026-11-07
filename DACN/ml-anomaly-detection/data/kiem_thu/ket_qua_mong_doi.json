@@ -1,0 +1,106 @@
+{
+  "source": "Dữ liệu giả lập để kiểm thử chức năng; không phải số liệu đo thực tế.",
+  "settings": {
+    "timestamp_col": "timestamp",
+    "value_col": "value",
+    "label_col": "is_anomaly (nếu có)",
+    "model_names": [
+      "mad"
+    ],
+    "train_fraction": 0.7,
+    "contamination": 0.01,
+    "include_time": false
+  },
+  "known_anomalies": [
+    {
+      "csv_line": 153,
+      "observation": 152,
+      "timestamp": "2026-10-01 12:35:00",
+      "value": 95.0
+    },
+    {
+      "csv_line": 174,
+      "observation": 173,
+      "timestamp": "2026-10-01 14:20:00",
+      "value": 8.0
+    },
+    {
+      "csv_line": 187,
+      "observation": 186,
+      "timestamp": "2026-10-01 15:25:00",
+      "value": 90.0
+    }
+  ],
+  "files": [
+    {
+      "file": "01_binh_thuong.csv",
+      "input_rows": 200,
+      "outcome": "valid",
+      "clean_rows": 200,
+      "train_rows": 140,
+      "test_rows": 60,
+      "mad_alerts": 0,
+      "note": "Nhãn đều bình thường; không dùng Recall/F1 để kết luận chất lượng."
+    },
+    {
+      "file": "02_bat_thuong_co_nhan.csv",
+      "input_rows": 200,
+      "outcome": "valid_with_known_anomalies",
+      "clean_rows": 200,
+      "train_rows": 140,
+      "test_rows": 60,
+      "true_test_anomalies": 3,
+      "mad_alerts": 3,
+      "mad_true_positives": 3,
+      "mad_false_positives": 0,
+      "mad_false_negatives": 0
+    },
+    {
+      "file": "03_thoi_gian_sai.csv",
+      "input_rows": 20,
+      "outcome": "reject",
+      "error_contains": "invalid timestamps"
+    },
+    {
+      "file": "04_trung_thoi_gian.csv",
+      "input_rows": 20,
+      "outcome": "reject",
+      "error_contains": "Duplicate timestamps"
+    },
+    {
+      "file": "05_gia_tri_loi.csv",
+      "input_rows": 20,
+      "outcome": "clean_and_warn",
+      "clean_rows": 14,
+      "dropped_rows": 6,
+      "train_rows": 9,
+      "test_rows": 5,
+      "note": "Dấu phẩy thập phân được đặt trong ngoặc kép: cấu trúc CSV vẫn đúng, giá trị không chuyển thành số được."
+    },
+    {
+      "file": "06_nhan_sai.csv",
+      "input_rows": 20,
+      "outcome": "reject_only_when_label_selected",
+      "error_contains": "Labels must",
+      "note": "Chọn is_anomaly làm nhãn để thấy lỗi. Không chọn nhãn thì vẫn phân tích chỉ số được."
+    },
+    {
+      "file": "07_sai_so_cot.csv",
+      "input_rows": 5,
+      "outcome": "reject",
+      "error_contains": "fields do not match"
+    },
+    {
+      "file": "08_ten_cot_trung.csv",
+      "input_rows": 5,
+      "outcome": "reject",
+      "error_contains": "Column names must be unique"
+    },
+    {
+      "file": "09_qua_it_du_lieu.csv",
+      "input_rows": 3,
+      "outcome": "reject",
+      "error_contains": "at least 3 training rows"
+    }
+  ]
+}
