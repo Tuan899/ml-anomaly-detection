@@ -3,24 +3,46 @@
 **NGHIÊN CỨU THUẬT TOÁN PHÁT HIỆN BẤT THƯỜNG TRONG HOẠT ĐỘNG CỦA HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU**
 
 Ứng dụng Streamlit/FastAPI phân tích năm chỉ số MySQL: QPS, kết nối, thời gian
-phản hồi, truy vấn chậm và kết nối thất bại. Nguồn dữ liệu là CSV ngoại tuyến
-hoặc thu theo đợt từ MySQL bằng tài khoản chỉ đọc. Giữ đủ MAD, Isolation Forest,
+phản hồi, truy vấn chậm và kết nối thất bại. Giao diện nhận dữ liệu mẫu hoặc CSV,
+bao gồm CSV thu riêng từ MySQL bằng tài khoản chỉ đọc. Giữ đủ MAD, Isolation Forest,
 LOF và One-Class SVM; mô hình chỉ học train và dự đoán test theo thời gian.
 
-**Bắt đầu tại [hướng dẫn giao diện mới](docs/INTERFACE_GUIDE.md)**: chọn dữ liệu,
-bấm **Bắt đầu phân tích**, đọc kết quả và so sánh hai bộ mẫu. Chế độ **Cơ bản**
-là mặc định; chế độ **Nâng cao** giữ các cấu hình và chức năng nghiên cứu.
+**Bản demo giám sát mới:** xem [hướng dẫn diễn tập 5 phút](docs/DEMO_MONITORING.md).
+Chế độ mặc định **Giám sát trực tuyến** có ba màn hình: giám sát/cảnh báo,
+điều khiển demo và đối chiếu thuật toán. Học mức nền riêng, phát lại K1–K4
+hoặc nhận chỉ số từ bộ thu độc lập; lịch sử, mô hình và phản hồi lưu bằng SQLite.
+Mức cảnh báo theo 1/2/3–4 phiếu của bốn thuật toán; mất tín hiệu được báo riêng.
+
+**Trợ lý AI và email quản trị viên:** nút **Trợ lý AI & Email** trên màn hình
+giám sát cho phép hỏi về cảnh báo, nhập khóa API OpenAI và cấu hình SMTP.
+Email gửi ở Backend cho các mẫu mới từ 2/4 phiếu, có giới hạn tần suất và
+nhật ký gửi; chatbot dựa vào chứng cứ đã lưu. Xem
+[hướng dẫn cấu hình](docs/ADMIN_ASSISTANT.md).
+
+**Demo bằng tải thật trên MySQL thử nghiệm:** chạy `CHAY_DEMO_TRUC_TIEP.bat`
+(`--no-tls` nếu dùng máy MySQL loopback không TLS). Công cụ hỏi tài khoản và
+mật khẩu, thu nền bình thường từ máy chủ thật rồi mở bộ thu/giao diện. Các nút
+K2/K3/K4 tạo tải có thời lượng, giới hạn cường độ và nút dừng; chỉ hoạt động
+khi bộ thu đang nhận mẫu mới từ đúng máy chủ đích. Xem cấu hình và giới hạn
+trong [hướng dẫn demo trực tiếp](docs/DEMO_MONITORING.md#diễn-tập-bằng-tải-thật-trên-mysql-thử-nghiệm).
+
+Các luồng **Cơ bản** và **Nâng cao** giữ lại phân tích CSV theo từng lần chạy;
+xem [hướng dẫn giao diện CSV](docs/INTERFACE_GUIDE.md).
 
 [Quy trình demo kỹ thuật MySQL](docs/DEMO_MYSQL.md) hướng dẫn cài đặt, chạy ứng dụng,
 nhập hai bộ kiểm thử, đọc cảnh báo và đánh giá Precision/Recall/F1/confusion matrix.
 [Thiết lập MySQL ít quyền và TLS](docs/MYSQL_SETUP.md) giải thích chính xác số đo
 thực tế, bao gồm độ trễ thăm dò `SELECT 1` và giới hạn diễn giải.
 
-Giao diện mặc định kiểm tra MySQL theo ba bước: chọn dữ liệu, phân tích tự động,
+Giao diện Cơ bản kiểm tra MySQL theo ba bước: chọn dữ liệu, phân tích tự động,
 xem kết quả. Có màn hình so sánh hai bộ bằng cùng mô hình tham chiếu.
-Hai CSV tổng hợp có nhãn nằm tại
-`data/mysql_normal.csv` và `data/mysql_anomalous.csv`; manifest lưu seed, hash và
-kịch bản chèn. Lệnh `python scripts/evaluate_mysql_demo.py` tính lại kết quả thật,
+Hai CSV mặc định có nhãn nằm tại
+`data/mysql_normal.csv` và `data/mysql_query_spike.csv`. Chế độ Nâng cao có thêm
+`data/mysql_latency_spike.csv`. Thư mục `data` chỉ giữ ba CSV, mỗi tệp **10 dòng**:
+7 dòng đầu bình thường để học, 3 dòng cuối để kiểm tra. Hai bộ có bất thường
+được thay đổi ở dòng **8–9, lúc 09:07–09:08**, rồi trở lại bình thường ở dòng 10.
+Manifest tại `docs/mysql_datasets_manifest.json` lưu hash và giá trị chèn của từng bộ.
+Lệnh `python scripts/evaluate_mysql_demo.py` tính lại kết quả ba bộ,
 không đọc bảng điểm chép sẵn. Không dùng dữ liệu tổng hợp để khẳng định chất lượng
 trên máy chủ thực.
 
@@ -37,11 +59,38 @@ Các chức năng CSV một chỉ số, NAB, notebook và API trước đây v�
 điểm đầu rồi dự đoán 482 điểm cuối. Hai mốc bất thường lấy từ nhãn gốc NAB.
 Chế độ CSV tùy chỉnh vẫn có bốn thuật toán, trong đó mọi mô hình chỉ fit train.
 
-Luồng notebook/CSV một chỉ số phân tích ngoại tuyến. Chế độ MySQL hỗ trợ thu số
-liệu thật theo đợt; chưa phải dịch vụ cảnh báo chạy liên tục. Một cảnh báo của
+Luồng notebook/CSV một chỉ số phân tích ngoại tuyến. Luồng Cơ bản/Nâng cao phân tích CSV
+chứa số liệu thu theo đợt; chưa phải dịch vụ cảnh báo chạy liên tục. Một cảnh báo của
 mô hình cần được người dùng kiểm tra theo ngữ cảnh thực tế.
 
-## Chạy trên Windows từ thư mục gốc
+## Chạy nhanh trên Windows
+
+Mở thư mục `ml-anomaly-detection`, bấm đúp **`CHAY_UNG_DUNG.bat`**.
+Trình chạy tự chọn môi trường Python có đủ thư viện, khởi động BE và mở FE
+tại **http://127.0.0.1:8501**. Giữ cửa sổ đang chạy; nhấn `Ctrl + C` để dừng.
+Không chạy `frontend/app.py` bằng nút **Run Python File** của VS Code.
+Nếu cổng mặc định đang bận, trình chạy chọn cổng trống kế tiếp và in địa chỉ
+thực tế trong cửa sổ; FE được nối đến đúng cổng BE tự động.
+
+Từ PowerShell tại workspace hiện tại `C:\Users\User\DACN\DACN`:
+
+```powershell
+.\ml-anomaly-detection\CHAY_UNG_DUNG.bat
+```
+
+Máy hiện tại có môi trường đầy đủ ở `C:\Users\User\DACN\.venv`; môi trường
+`.venv` bên trong project có thể chưa được cài thư viện. Trình chạy kiểm tra
+thư viện trước khi chọn, không cần kích hoạt môi trường hoặc đổi ExecutionPolicy
+toàn máy. Nếu thiếu thư viện, nó in lệnh cài đặt; lỗi BE được lưu tại
+`.runtime/backend.err.log` trong project.
+
+Để kiểm tra môi trường mà chưa khởi động ứng dụng:
+
+```powershell
+.\ml-anomaly-detection\CHAY_UNG_DUNG.bat -Check
+```
+
+## Chạy riêng BE/FE từ thư mục gốc bên ngoài
 
 Các lệnh dưới đây chạy trong PowerShell tại `C:\Users\User\DACN`. Cần Python
 3.10 trở lên và Streamlit 1.65 trở lên theo `requirements.txt`. Nếu đã có môi
@@ -113,7 +162,7 @@ thuật toán khi mất kết nối BE.
 Mặc định giao diện mở **Cơ bản**: chọn một trong hai bộ mẫu hoặc so sánh cả hai,
 bấm **Bắt đầu phân tích**, đọc trạng thái và các thời điểm cần kiểm tra, rồi tải
 báo cáo. Xem [hướng dẫn mới](docs/INTERFACE_GUIDE.md) để demo từ đầu đến đánh giá.
-Nguồn CSV và kết nối MySQL vẫn có trong lựa chọn nguồn dữ liệu.
+Chọn **Tải tệp CSV** để phân tích số liệu đã thu và lưu thành tệp.
 
 Các bước notebook/CSV một chỉ số dưới đây bắt đầu bằng chọn **Nâng cao** ở thanh
 bên, rồi chọn **CSV một chỉ số / notebook NAB**. Xem [demo MySQL Nâng cao](docs/DEMO_MYSQL.md)
@@ -248,13 +297,13 @@ chính thức của NAB.
 Ví dụ chạy từ thư mục gốc:
 
 ```powershell
-curl.exe -X POST "http://127.0.0.1:8000/detect" -F "file=@DACN/ml-anomaly-detection/data/cpu_0.csv"
+curl.exe -X POST "http://127.0.0.1:8000/detect" -F "file=@DACN/ml-anomaly-detection/resources/examples/cpu_0.csv"
 ```
 
 Tái lập notebook qua BE:
 
 ```powershell
-curl.exe -X POST "http://127.0.0.1:8000/detect?analysis_mode=notebook_reference&include_context=true" -F "file=@DACN/ml-anomaly-detection/data/ec2_cpu_utilization.csv"
+curl.exe -X POST "http://127.0.0.1:8000/detect?analysis_mode=notebook_reference&include_context=true" -F "file=@DACN/ml-anomaly-detection/resources/nab/ec2_cpu_utilization.csv"
 ```
 
 Chế độ này kiểm tra đúng chuỗi tham chiếu; không áp nhãn NAB hay mốc chia cố
@@ -273,7 +322,7 @@ phần huấn luyện và kiểm tra.
 ```python
 from src.pipeline import run_detection
 
-run = run_detection("data/cpu_0.csv", train_fraction=0.7)
+run = run_detection("resources/examples/cpu_0.csv", train_fraction=0.7)
 print(run.metadata)
 print(run.predictions.head())
 ```
@@ -285,7 +334,7 @@ print(run.predictions.head())
 | `frontend/app.py` | Giao diện Streamlit: chọn dữ liệu, xem trước, cấu hình, gọi BE để phân tích, xem và tải kết quả. |
 | `frontend/monitoring_workspace.py` | Giao diện Cơ bản mặc định: ba bước tự động, so sánh hai bộ dữ liệu, giải thích và báo cáo. |
 | `frontend/input_data.py` | Tự nhận diện tên cột CSV phổ biến và kiểm tra dữ liệu đầu vào cho chế độ Cơ bản. |
-| `frontend/dbms_dashboard.py` | Luồng MySQL Nâng cao: CSV/thu mẫu, cả năm chỉ số, trạng thái, bằng chứng và so sánh gốc/sau lọc. |
+| `frontend/dbms_dashboard.py` | Luồng MySQL Nâng cao: dữ liệu mẫu/CSV, cả năm chỉ số, trạng thái, bằng chứng và so sánh gốc/sau lọc. |
 | `frontend/api_client.py` | Gửi CSV và cấu hình đến FastAPI, đọc JSON thành dữ liệu kết quả và xử lý lỗi kết nối. |
 | `frontend/helpers.py` | Chọn cột số phù hợp và chuyển thông báo kiểm tra dữ liệu sang hướng dẫn tiếng Việt. |
 | `backend/api.py` | Nhận yêu cầu HTTP, giới hạn dung lượng file và trả kết quả JSON. |
@@ -327,26 +376,30 @@ phân tích hoặc mở cửa sổ biểu đồ.
 
 ## Bộ CSV để tự kiểm thử
 
-Tải [bộ 9 tệp CSV kiểm thử](./data/bo_csv_kiem_thu.zip), giải nén rồi tải từng
-tệp lên giao diện. Xem [hướng dẫn và kết quả mong đợi](./data/kiem_thu/HUONG_DAN.md)
-để phân biệt lỗi định dạng, dòng cần làm sạch và điểm bất thường trong dữ liệu
-hợp lệ. Toàn bộ các tệp này là dữ liệu giả lập phục vụ kiểm thử.
+Ba tệp trong `data` đều có 10 dòng, cùng thời gian và cùng 7 dòng đầu:
 
-Bắt đầu với `02_bat_thuong_co_nhan.csv`: chọn `timestamp`, `value` và nhãn
-`is_anomaly`, chỉ chạy MAD, giữ tỷ lệ huấn luyện 70% và tắt đặc trưng chu kỳ.
-Trong 60 điểm kiểm tra, kết quả mong đợi là 3 cảnh báo đúng, 0 cảnh báo nhầm,
-0 bỏ sót. Kết quả này kiểm tra chức năng trên ví dụ đã biết, không chứng minh
-chất lượng trên dữ liệu thực tế.
+| Tệp | Nội dung khác nhau ở dòng 8–9 |
+|---|---|
+| `mysql_normal.csv` | QPS 51/49, phản hồi 15/14,5 ms, nhãn đều 1. |
+| `mysql_query_spike.csv` | QPS tăng lên 300/350, nhãn -1. |
+| `mysql_latency_spike.csv` | Phản hồi tăng lên 180/220 ms, truy vấn chậm 8/10, nhãn -1. |
 
-Có thể tạo lại các tệp bằng lệnh sau, chạy từ thư mục gốc:
+Giao diện Cơ bản hiện đủ 10 dòng ngay trong phần xem trước. Chọn **So sánh hai
+bộ dữ liệu** để đối chiếu mẫu bình thường và tăng truy vấn. Mẫu phản hồi chậm
+có trong Nâng cao hoặc có thể tải CSV trực tiếp. Đây là dữ liệu tổng hợp để
+thử thao tác; 7 dòng train chưa đủ để đánh giá chất lượng mô hình thực tế.
+
+Tạo lại đúng ba tệp từ thư mục dự án:
 
 ```powershell
-.\.venv\Scripts\python.exe .\scripts\create_test_samples.py
+.\.venv\Scripts\python.exe .\scripts\generate_mysql_demo.py
 ```
 
-Lệnh chỉ ghi các tệp trong bộ kiểm thử và tệp ZIP; không thay đổi dữ liệu NAB.
+Lệnh ghi ba CSV và manifest trong `docs`; không ghi thêm tài liệu vào `data`.
 
 ## Kiểm tra sau khi sửa mã nguồn
+
+Đợt rà soát ngày 14/11/2026: xem [vấn đề, thay đổi, kiểm thử và giới hạn](docs/OPTIMIZATION_REVIEW.md).
 
 Từ thư mục gốc, chạy các kiểm thử pipeline, API, giao tiếp HTTP FE–BE và
 luồng thao tác Streamlit:
@@ -365,11 +418,11 @@ khi BE không kết nối được; FE không dùng pipeline cục bộ để th
 ## Thực nghiệm theo notebook tham chiếu
 
 Dữ liệu chính là chuỗi [EC2 CPU của NAB](https://github.com/numenta/NAB/blob/master/data/realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv),
-có 4.032 điểm cách nhau 5 phút. Tệp `data/ec2_cpu_utilization.csv` giữ dữ liệu
-gốc; `data/nab_cpu_labeled.csv` thêm nhãn `is_anomaly` theo
+có 4.032 điểm cách nhau 5 phút. Tệp `resources/nab/ec2_cpu_utilization.csv` giữ dữ liệu
+gốc; `resources/nab/nab_cpu_labeled.csv` thêm nhãn `is_anomaly` theo
 [combined_labels.json](https://github.com/numenta/NAB/blob/master/labels/combined_labels.json).
-Nguồn cố định theo commit và mã băm nằm ở `data/nab_provenance.json`; giấy phép
-ở `data/NAB_LICENSE.txt`. Nhãn không phải đầu vào của mô hình.
+Nguồn cố định theo commit và mã băm nằm ở `resources/nab/nab_provenance.json`; giấy phép
+ở `resources/nab/NAB_LICENSE.txt`. Nhãn không phải đầu vào của mô hình.
 
 | Mốc nhãn gốc | Vị trí trong cách chia 3.550/482 |
 |---|---|
@@ -409,11 +462,9 @@ EC2 chưa xác lập tải cơ sở dữ liệu và ứng dụng chưa giám sá
 
 ## Các mẫu ngắn và giới hạn
 
-Các tệp `data/cpu_0.csv` đến `data/cpu_5.csv` hiện có cùng nội dung, mỗi tệp 19
-dòng. Chúng giúp kiểm tra thao tác và luồng chạy; sáu tệp này không đại diện
-cho sáu chuỗi độc lập. Chúng không có cột nhãn, cũng không bao phủ hai timestamp
-NAB được khai báo trong mã. Vì vậy không dùng chúng để khẳng định độ chính xác
-của thuật toán.
+Mẫu một chỉ số `resources/examples/cpu_0.csv` có 19 dòng và được giữ cho luồng cũ.
+Các bản sao trùng lặp `cpu_1.csv` đến `cpu_5.csv` đã được bỏ. Mẫu ngắn không có
+cột nhãn và không bao phủ hai timestamp NAB, nên chỉ dùng để thử thao tác.
 
 Có thể tải thêm dữ liệu NAB bằng hàm bên dưới, chạy trong thư mục dự án con.
 Thao tác cần Internet; file tải về chưa có nhãn đánh giá đi kèm.

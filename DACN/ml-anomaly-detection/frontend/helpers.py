@@ -29,8 +29,8 @@ def error_message(error: Exception) -> str:
     if isinstance(error, pd.errors.ParserError):
         return "Các dòng CSV có số cột không khớp. Hãy kiểm tra dấu phẩy, dấu ngoặc kép và dòng tiêu đề."
     translations = (
-        (("missing mysql activity",), "CSV MySQL cần đủ năm cột: queries_per_second, connections, response_time_ms, slow_queries và connection_errors. Kiểm tra tên cột và thử lại."),
-        (("finite nonnegative", "mysql metric"), "Cả năm chỉ số MySQL phải là số hữu hạn không âm, không chứa ô trống hoặc giá trị đúng/sai. Lần chạy đã dừng, không tự thay hoặc bỏ dòng."),
+        (("missing mysql activity",), "CSV cần đủ năm cột: queries_per_second, connections, response_time_ms, slow_queries và connection_errors. Kiểm tra tên cột và thử lại."),
+        (("finite nonnegative", "mysql metric"), "Cả năm chỉ số phải là số hữu hạn không âm, không chứa ô trống hoặc giá trị đúng/sai. Lần chạy đã dừng, không tự thay hoặc bỏ dòng."),
         (("notebook reference", "bundled notebook"), "Chế độ notebook cần đúng bộ NAB CPU gốc gồm 4.032 dòng. Hãy chọn mẫu NAB đầy đủ; với dữ liệu khác, tắt cấu hình notebook để phân tích tùy chỉnh."),
         (("empty", "contain data rows", "no columns to parse"), "CSV chưa có dữ liệu. Hãy thêm dòng tiêu đề và ít nhất 4 dòng đo."),
         (("column names must be unique", "duplicate column"), "Tên cột bị trùng. Hãy đặt tên riêng cho từng cột trong CSV."),

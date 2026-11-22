@@ -119,7 +119,7 @@ class PipelineTests(unittest.TestCase):
         self.assertTrue(all(row["mad_prediction"] == -1 for row in summary["anomalies"]["mad"]))
 
     def test_bundled_cli_sample_runs_with_automatic_split(self):
-        source = Path(__file__).parents[1] / "data" / "cpu_0.csv"
+        source = Path(__file__).parents[1] / "resources" / "examples" / "cpu_0.csv"
         frame, metrics = run_nab_analysis(source)
         self.assertGreater(len(frame), 3)
         self.assertEqual(set(metrics), {"mad", "isolation_forest", "lof", "one_class_svm"})

@@ -1,0 +1,450 @@
+
+
+                                         
+                                          UỶ BAN NHÂN DÂN
+                                    THÀNH PHỐ HỒ CHÍ MINH
+TRƯỜNG ĐẠI HỌC SÀI GÒN
+KHOA CÔNG NGHỆ THÔNG TIN
+
+
+BÁO CÁO MÔN HỌC
+ĐỒ ÁN CHUYÊN NGÀNH
+ĐỀ TÀI:
+NGHIÊN CỨU THUẬT TOÁN PHÁT HIỆN BẤT THƯỜNG TRONG HOẠT ĐỘNG CỦA HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU
+GIẢNG VIÊN HƯỚNG DẪN: TRỊNH TẤN ĐẠT
+THÀNH VIÊN
+
+LÊ ĐÌNH TUẤN – MSSV: 3123410408
+DƯƠNG TẤN TÀI – MSSV: 3123410313
+NGUYỄN THÀNH NHÂN – MSSV: 3121410360
+VÕ VĂN SƠN – MSSV: 3121410428
+
+
+                                                TP. Hồ Chí Minh, tháng 11 năm 2026
+CHƯƠNG 1. TỔNG QUAN VỀ VẤN ĐỀ
+1.1. Lý do chọn đề tài
+
+Trong bối cảnh chuyển đổi số, hệ quản trị cơ sở dữ liệu giữ vai trò trung tâm trong các ứng dụng thương mại điện tử, giáo dục, y tế, tài chính và hành chính. Hệ thống DBMS chịu trách nhiệm tiếp nhận truy vấn, quản lý giao dịch, điều phối kết nối và duy trì tính nhất quán của dữ liệu. Khi lượng người dùng hoặc tải giao dịch tăng, các chỉ số vận hành biến đổi liên tục. Nếu không được giám sát kịp thời, sự bất thường về thời gian phản hồi, số lượng truy vấn hoặc khả năng kết nối có thể dẫn đến suy giảm hiệu năng và ảnh hưởng chất lượng dịch vụ.
+Các công cụ giám sát truyền thống thường sử dụng ngưỡng cảnh báo như CPU vượt 90% hoặc số kết nối vượt một giá trị nhất định. Ngưỡng cố định dễ xây dựng và giải thích, nhưng có thể gây cảnh báo sai khi tải tăng hợp lệ, hoặc bỏ sót những trạng thái bất thường chỉ bộc lộ trong mối tương quan giữa nhiều chỉ số. Ví dụ, 60 truy vấn mỗi giây có thể là bình thường trong giờ cao điểm, nhưng đáng chú ý khi xuất hiện lúc hệ thống thường rất ít hoạt động.
+Phát hiện bất thường là phương pháp tìm ra các quan sát không phù hợp với hành vi thông thường của dữ liệu. Các thuật toán học máy không giám sát có thể phát hiện mẫu hiếm hoặc cấu trúc phân bố khác thường ngay cả khi không có nhiều nhãn sự cố. Khi kết hợp dữ liệu hoạt động DBMS dưới dạng chuỗi thời gian, hướng tiếp cận này có tiềm năng bổ sung cho công tác giám sát thủ công và ngưỡng cố định [1], [2].
+Vì những lý do trên, đề tài “Nghiên cứu thuật toán phát hiện bất thường trong hoạt động của hệ quản trị cơ sở dữ liệu” được lựa chọn nhằm hệ thống hóa cơ sở lý thuyết, tổ chức thực nghiệm và đánh giá khả năng ứng dụng của các thuật toán tiêu biểu. Trọng tâm không phải là phát hiện một bản ghi bị sửa từ 50 thành 51, mà là xác định các trạng thái vận hành khác thường qua chuỗi số liệu hoặc đặc trưng được thu thập trong quá trình DBMS hoạt động.
+1.2. Vấn đề nghiên cứu
+Đầu vào của bài toán là tập quan sát X = {x₁, x₂, …, xn} có dấu thời gian. Mỗi quan sát có thể là một giá trị đơn biến (ví dụ số truy vấn/giây) hoặc vector nhiều biến gồm số kết nối, độ trễ, lỗi kết nối và mức sử dụng tài nguyên. Đầu ra là điểm bất thường hoặc nhãn dự đoán cho từng quan sát hoặc từng cửa sổ thời gian. Dấu cảnh báo phải được hiểu là tín hiệu cần kiểm tra, không phải bằng chứng trực tiếp về tấn công hay hư hỏng.
+Bài toán có ba thách thức chính. Thứ nhất, dữ liệu có tính thời gian: mức tải thay đổi theo khung giờ, chu kỳ và xu hướng, nên một giá trị khác trung bình chung chưa chắc bất thường. Thứ hai, dữ liệu bất thường hiếm và nhiều hệ thống không có nhãn đầy đủ, gây khó khăn cho việc huấn luyện và đánh giá. Thứ ba, mỗi thuật toán có giả định và độ nhạy riêng đối với phân bố dữ liệu, kích thước mẫu, tham số và số chiều.
+Từ đó, nghiên cứu đặt ra yêu cầu xây dựng quy trình đánh giá thống nhất, đảm bảo mô hình được học trên dữ liệu quá khứ, thử nghiệm trên dữ liệu chưa thấy trước, và so sánh bằng độ đo phản ánh đúng cả khả năng phát hiện lẫn tỷ lệ cảnh báo sai.
+1.3. Mục tiêu và câu hỏi nghiên cứu
+1.3.1. Mục tiêu nghiên cứu
+Mục tiêu tổng quát là nghiên cứu nguyên lý, xây dựng quy trình thực nghiệm và đánh giá khả năng ứng dụng các thuật toán phát hiện bất thường trên dữ liệu chuỗi thời gian phản ánh hoạt động DBMS. Các mục tiêu cụ thể gồm: khảo sát dữ liệu vận hành và phương thức thu thập; nghiên cứu các thuật toán Isolation Forest, LOF, One-Class SVM và phương pháp thống kê đối chứng; thiết kế quy trình làm sạch và trích xuất đặc trưng; xây dựng mô hình kiểm thử; đánh giá theo các kịch bản bình thường và có bất thường; đề xuất hướng triển khai hỗ trợ quản trị viên.
+
+1.3.2. Câu hỏi nghiên cứu
+RQ1: Với cùng tập dữ liệu hoạt động DBMS, sự khác biệt về Precision, Recall, F1-score và thời gian xử lý giữa Isolation Forest, LOF, One-Class SVM và phương pháp thống kê đối chứng là gì?
+RQ2: Các thuật toán phản ứng như thế nào với từng dạng bất thường, gồm tăng đột biến số truy vấn, số kết nối và thời gian phản hồi?
+RQ3: Việc dùng cửa sổ trượt và đặc trưng đa biến có cải thiện phát hiện bất thường so với chỉ dùng một chỉ số đơn biến hay không?
+RQ4: Những điều kiện và hạn chế nào cần lưu ý khi chuyển mô hình từ tập dữ liệu mô phỏng sang giám sát DBMS thực tế?
+1.4. Phạm vi nghiên cứu
+Đề tài triển khai và đánh giá bốn phương pháp trên năm chỉ số MySQL: MAD/robust Z-score, Isolation Forest, LOF và One-Class SVM. Thực nghiệm định lượng trong báo cáo dùng bốn CSV tổng hợp tái lập bằng seed cố định, không phải log của máy chủ MySQL thật. Python, scikit-learn, pandas và NumPy xử lý dữ liệu; FastAPI cung cấp API; Streamlit và Plotly trình bày kết quả. PostgreSQL và đánh giá trên tải thật được giữ làm hướng phát triển.
+Dữ liệu được phân tích theo thứ tự thời gian, không xáo trộn. Mỗi mô hình chỉ học phần đầu của từng CSV và dự đoán phần cuối. Công cụ có thêm chức năng thu chỉ số MySQL theo đợt bằng tài khoản chỉ đọc, nhưng lần đánh giá được báo cáo chưa sử dụng kết nối máy chủ thật. Không diễn giải chức năng này thành một dịch vụ giám sát liên tục.
+Kết quả được ghi nhận cùng phiên bản thư viện, cấu hình mô hình, hash dữ liệu và tệp dự đoán để kiểm tra lại. Các số liệu từ bài báo được trình bày riêng trong mục 2.4; kết quả tự chạy trên dữ liệu tổng hợp nằm ở Chương 4. Hai nhóm số liệu có phạm vi đánh giá khác nhau.
+
+CHƯƠNG 2. CƠ SỞ LÝ THUYẾT
+2.1. Tổng quan về phát hiện bất thường trên chuỗi thời gian
+2.1.1. Khái niệm và các loại bất thường
+Chuỗi thời gian là dãy quan sát xt được ghi nhận theo thứ tự thời gian t, trong đó mỗi mẫu có thể là số thực hoặc vector các chỉ số vận hành. Khác với dữ liệu bảng độc lập, chuỗi thời gian thường có tự tương quan: giá trị hiện tại chịu ảnh hưởng của giá trị trước đó. Ngoài ra có thể xuất hiện xu hướng, mùa vụ, nhiễu và thay đổi chế độ vận hành. Vì vậy, khi xem một giá trị có bất thường hay không cần xét cả bối cảnh mà giá trị đó xuất hiện [2].
+Bất thường điểm là quan sát lệch rõ rệt so với mức hoạt động lân cận, ví dụ số truy vấn/giây tăng mạnh tại một thời điểm. Bất thường ngữ cảnh là quan sát chỉ trở nên bất thường ở thời điểm hoặc trạng thái xác định; cùng một mức tải có thể bình thường ban ngày nhưng bất thường vào ban đêm. Bất thường tập thể là một đoạn chuỗi có dạng khác thường dù từng điểm riêng lẻ không quá cực đoan, như thời gian truy vấn duy trì ở mức hơi cao trong nhiều phút liên tiếp [1], [2].
+
+Loại bất thường
+Đặc trưng
+Ví dụ trong DBMS
+Điểm
+Một giá trị chệch rõ khỏi mức nền
+Số kết nối tăng từ ~20 lên 400
+Ngữ cảnh
+Phụ thuộc thời gian hoặc trạng thái
+Tải cao lúc 03:00, dù từng gặp vào giờ cao điểm
+Tập thể
+Một đoạn chuỗi có mẫu hình bất thường
+Độ trễ kéo dài bất thường nhiều chu kỳ
+             
+Bảng 2.1. Các loại bất thường trong giám sát DBMS 
+
+
+Khái niệm “thay đổi” cần tách biệt khỏi “bất thường”. Nếu số truy vấn tăng từ 50 lên 51, hệ thống có biến động nhưng không nhất thiết bất thường. Ngược lại, dữ liệu giữ nguyên một giá trị trong thời gian quá dài cũng có thể là bất thường nếu điều kiện vận hành vốn dao động liên tục. Chỉ một luật so sánh tuyệt đối không thay thế được mô hình đánh giá hành vi thống kê.
+2.1.2. Đặc điểm dữ liệu chuỗi thời gian và cửa sổ trượt
+Các chuỗi đo hoạt động DBMS có thể chịu ảnh hưởng của xu hướng dài hạn, mùa vụ theo ngày/tuần và thay đổi cấu hình hoặc tải ứng dụng. Khi đặc điểm phân bố thay đổi theo thời gian, mô hình học từ một giai đoạn có thể không còn phù hợp với giai đoạn sau. Do đó, nên khảo sát phân bố dữ liệu, biểu đồ theo thời gian và tỷ lệ thiếu trước khi chọn mô hình.
+Cửa sổ trượt là kỹ thuật dùng k quan sát gần nhất để tạo vector đặc trưng tại thời điểm t: Wt = [xt₋k₊₁, …, xt]. Từ cửa sổ có thể trích xuất trung bình, trung vị, độ lệch chuẩn, min/max, tốc độ biến động, độ dốc hoặc giá trị trễ. Mục tiêu là cung cấp thêm bối cảnh thời gian cho thuật toán vốn hoạt động trên bảng đặc trưng.
+Wt = [xt₋k₊₁, …, xt] (2.1)
+Kích thước cửa sổ là siêu tham số cần lựa chọn dựa trên tần suất lấy mẫu. Cửa sổ quá ngắn có thể nhạy với nhiễu, trong khi cửa sổ quá dài có thể làm mờ điểm đột biến và tạo độ trễ phát hiện. Trong thực nghiệm phải sử dụng cùng quy tắc tạo đặc trưng để so sánh các thuật toán một cách công bằng; mọi giá trị chuẩn hóa, điền thiếu và lựa chọn tham số cần được xác lập từ tập huấn luyện hoặc validation.
+2.2. Các thuật toán phát hiện bất thường
+2.2.1. Isolation Forest
+Isolation Forest được Liu, Ting và Zhou giới thiệu năm 2008. Khác với các phương pháp mô hình hóa trực tiếp dữ liệu bình thường, thuật toán tạo nhiều cây phân tách ngẫu nhiên để cô lập các quan sát. Một điểm khác biệt lớn thường bị tách khỏi các điểm còn lại sau ít phép chia hơn, tương ứng đường đi trên cây ngắn hơn [3].
+Với mỗi cây, thuật toán chọn ngẫu nhiên một thuộc tính và một ngưỡng phân tách trong miền giá trị. Điểm bất thường được tính dựa trên độ dài đường đi trung bình qua tập cây; điểm có độ dài đường đi càng ngắn thường càng đáng ngờ. Trên dữ liệu DBMS đa biến, Isolation Forest có thể sử dụng nhiều đặc trưng như truy vấn/giây, kết nối và độ trễ.
+Ưu điểm là khả năng xử lý dữ liệu tương đối lớn, không đòi hỏi nhãn huấn luyện và ít bị phụ thuộc vào giả định phân phối chuẩn. Hạn chế là kết quả bị ảnh hưởng bởi cách chọn mẫu, tham số contamination và biểu diễn đặc trưng. Thuật toán không tự hiểu ngữ cảnh thời gian; cần bổ sung các đặc trưng cửa sổ nếu muốn phát hiện mẫu hình liên tiếp.
+2.2.2. Local Outlier Factor (LOF)
+Local Outlier Factor do Breunig và cộng sự đề xuất năm 2000. Ý tưởng chính là so sánh mật độ lân cận của một điểm với mật độ của các điểm xung quanh. Nếu một điểm nằm trong vùng thưa hơn đáng kể so với hàng xóm, nó có thể được xem là bất thường cục bộ [4].
+LOF phù hợp khi dữ liệu gồm nhiều cụm hoặc chế độ vận hành có mật độ khác nhau, chẳng hạn ban ngày nhiều truy vấn và ban đêm ít truy vấn. Dù vậy, lựa chọn số hàng xóm k, khoảng cách và cách chuẩn hóa có thể ảnh hưởng lớn đến điểm bất thường. Khi số chiều tăng hoặc mẫu dữ liệu quá ít, ước lượng mật độ trở nên kém ổn định.
+Trong Scikit-learn, khi cần huấn luyện trên một giai đoạn và dự đoán trên dữ liệu tương lai chưa xuất hiện, phải khai báo LocalOutlierFactor(novelty=True) trước khi fit. Chế độ mặc định sử dụng fit_predict trên chính tập dữ liệu và không phù hợp để tuyên bố đã dự đoán trên một tập kiểm thử độc lập [5].
+2.2.3. One-Class Support Vector Machine (One-Class SVM)
+One-Class SVM học miền quyết định mô tả dữ liệu thông thường; các điểm nằm ngoài miền được gắn nhãn bất thường. Với kernel RBF, mô hình tạo ranh giới phi tuyến. Tham số ν là cận trên của tỷ lệ lỗi huấn luyện và cận dưới của tỷ lệ vector hỗ trợ trong điều kiện lý thuyết của mô hình; γ điều khiển kernel. Giá trị ν không bảo đảm tỷ lệ cảnh báo trên test bằng chính nó [6].
+
+Ưu điểm là khả năng biểu diễn ranh giới phức tạp khi dữ liệu được chuẩn hóa và tham số chọn hợp lý. Nhược điểm là nhạy với quy mô đặc trưng, nhiễu và tham số; chi phí huấn luyện có thể tăng đáng kể trên tập dữ liệu lớn. Vì vậy, cần chuẩn hóa dựa trên tập train và thử nghiệm một lưới tham số được định nghĩa trước bằng dữ liệu validation.
+2.2.4. Phương pháp thống kê cơ sở: MAD/robust Z-score
+Z-score cổ điển dùng trung bình và độ lệch chuẩn: Z = (x − μ)/σ. Thực nghiệm của đề tài dùng biến thể robust Z-score dựa trên trung vị và độ lệch tuyệt đối trung vị (MAD), giúp giảm ảnh hưởng của cực trị. Công thức modified Z-score với hệ số 0,6745 và mốc tham khảo 3,5 được mô tả trong NIST/SEMATECH e-Handbook [7].
+MAD = median(|xi − median(x)|); Mj(x) = 0,6745(xj − median_train,j)/MAD_train,j (2.2)
+Trong code, median/MAD được học từ train trên từng đặc trưng; một điểm bị mô hình MAD gắn cờ khi maxj|Mj(x)| ≥ 3,5. Khi MAD bằng 0, chương trình dùng dung sai epsilon hữu hạn học từ nền train và công khai chính sách này trong metadata. Đây là lựa chọn triển khai cho nền hằng số, không phải công thức Z-score cổ điển với σ = 0.
+MAD là đường cơ sở thống kê để đối chiếu với ba mô hình học máy. Trong chế độ DBMS, cả bốn phương pháp nhận cùng năm đặc trưng và dữ liệu được StandardScaler chuẩn hóa theo train. Các bộ demo có đợt tăng biên độ được cố ý tách rõ nên phù hợp kiểm tra chức năng, chưa đủ để kết luận mô hình nào tốt hơn trên tải MySQL thực.
+Cần lưu ý các phương pháp dựa trên Z-score hoặc MAD chủ yếu xử lý điểm lệch về biên độ; nếu dữ liệu có mùa vụ mạnh thì nên tính theo nhóm ngữ cảnh hoặc phần dư chuỗi thời gian. Không nên đánh đồng số cảnh báo nhiều hơn với mô hình tốt hơn.
+
+Phương pháp
+Nguyên lý
+Ưu điểm
+Hạn chế chính
+MAD/robust Z-score
+Độ lệch so với trung vị/MAD
+Đơn giản, dễ giải thích
+Nhạy thay đổi mức nền; cần chính sách khi MAD = 0
+Isolation Forest
+Độ dễ cô lập bằng cây
+Hợp với dữ liệu nhiều chiều
+Phụ thuộc đặc trưng và ngưỡng
+LOF
+Mật độ tương đối cục bộ
+Nhận diện vùng dữ liệu khác mật độ
+Nhạy k, khó trên nhiều chiều
+One-Class SVM
+Ranh giới miền bình thường
+Mô hình phi tuyến
+Nhạy nu/gamma, chi phí lớn
+Bảng 2.2. So sánh định tính các phương pháp
+
+2.3. Các chỉ số đánh giá mô hình
+
+Để đánh giá, các nhãn thực tế trong tập kiểm thử được đối chiếu với nhãn do thuật toán dự đoán. Bốn thành phần của ma trận nhầm lẫn gồm TP: phát hiện đúng bất thường; FP: cảnh báo sai trên mẫu bình thường; FN: bỏ sót bất thường; và TN: nhận diện đúng mẫu bình thường. Các chỉ số được tính trên cùng đơn vị đánh giá (điểm thời gian hoặc cửa sổ), không trộn lẫn hai cách đếm.
+
+Precision = TP / (TP + FP) (2.3)
+
+Recall = TP / (TP + FN) (2.4)
+
+F1 = 2 × Precision × Recall / (Precision + Recall) (2.5)
+
+Precision cho biết trong các cảnh báo có bao nhiêu điểm đúng; Recall đo tỷ lệ bất thường được tìm thấy; F1 cân bằng hai chỉ số. Khi lớp bất thường hiếm, cần đọc thêm FP, FN và confusion matrix thay vì chỉ Accuracy. Trong lần chạy này, phần mềm trả 0 khi mẫu số bằng 0; báo cáo ghi N/A đối với Precision/Recall/F1 trên K1 vì K1 không có điểm bất thường để đánh giá khả năng phát hiện.
+
+Vì nhiều phương pháp nghiên cứu là không giám sát, cột label chỉ dùng để đánh giá trên test hoặc xác minh kịch bản; không được đưa trực tiếp vào tập đặc trưng hay dùng để sửa dự đoán. Nếu bộ dữ liệu không có nhãn đáng tin cậy, nghiên cứu chỉ có thể trình bày số điểm cảnh báo và phân tích định tính, không được công bố Precision/Recall/F1 như kết quả kiểm chứng.
+
+2.4. Kết quả định lượng từ các nghiên cứu liên quan
+2.4.1. AUC và thời gian trong bài Isolation Forest
+Bảng 2.3 ghi lại bốn bộ dữ liệu trong Bảng 3, trang 419 của Liu và cộng sự. IF dùng 100 cây, 256 mẫu/cây; LOF dùng k = 10, chạy đơn luồng trên CPU 2,3 GHz/Linux. Đây là kết quả công bố, không phải lần chạy ANOMALY LAB [3].
+
+Bộ dữ liệu
+AUC IF
+AUC LOF
+IF (s)
+LOF (s)
+Mammography
+0,86
+0,67
+0,66
+14647,00
+Annthyroid
+0,82
+0,72
+0,51
+72,02
+Satellite
+0,71
+0,52
+1,63
+217,39
+Ionosphere
+0,85
+0,89
+0,48
+0,64
+Bảng 2.3. AUC và tổng thời gian công bố của IF/LOF; nguồn [3, Bảng 3].
+Thời gian trong bảng là chi phí của thiết lập bài báo; AUC không phải Accuracy hay F1. IF có AUC cao hơn LOF ở ba bộ được trích, nhưng thấp hơn ở Ionosphere. Không áp các giá trị này vào dữ liệu MySQL hoặc suy ra IF luôn tốt hơn.
+2.4.2. Điểm NAB trong nghiên cứu phát hiện trực tuyến
+Ahmad và cộng sự công bố điểm NAB v1.0 theo ba hồ sơ thưởng/phạt. NAB score xét thời điểm phát hiện trong cửa sổ và FP/FN; detector hoàn hảo được chuẩn hóa thành 100, detector không cảnh báo thành 0. Các điểm dưới đây không phải phần trăm độ chính xác [8].
+
+Thuật toán
+Standard
+Low FP
+Low FN
+HTM AL
+70,1
+63,1
+74,3
+CAD OSE
+69,9
+67,0
+73,2
+Relative Entropy
+54,6
+47,6
+58,8
+Twitter ADVec
+47,1
+33,6
+53,5
+Bảng 2.4. Điểm NAB v1.0 đã công bố; nguồn [8, Bảng 1].
+Bảng 2 của bài báo còn đo độ trễ trung bình trên một tệp 22.695 bản ghi, ba lượt chạy, máy i7 2,6 GHz tám lõi: HTM 11,3 ms/điểm, Relative Entropy 0,05 ms/điểm. Không so sánh trực tiếp các giá trị này với thời gian fit/predict của Chương 4 do khác phần cứng, dữ liệu và giao thức [8].
+CHƯƠNG 3. DỮ LIỆU VÀ PHƯƠNG PHÁP THỰC NGHIỆM
+
+3.1. Dữ liệu thực nghiệm
+
+3.1.1. Mô tả bộ dữ liệu
+
+Bộ thực nghiệm chính gồm mysql_normal.csv (K1), mysql_query_spike.csv (K2), mysql_connection_spike.csv (K3) và mysql_latency_spike.csv (K4). Các tệp được sinh bởi scripts/generate_mysql_demo.py, seed 20261107, mỗi tệp 1.440 dòng từ 00:00 đến 23:59 UTC ngày 01/10/2026, chu kỳ một phút. Đây là dữ liệu tổng hợp có nhãn theo các phép biến đổi được định nghĩa trước; không sử dụng nhãn dự đoán làm nhãn thật.
+
+Ý nghĩa chỉ số được đối chiếu tài liệu MySQL: SHOW GLOBAL STATUS cung cấp các biến trạng thái toàn cục [9], [10]. Collector hiện dùng Questions để tính QPS, Threads_connected để lấy số kết nối, ΔSlow_queries và ΔAborted_connects để đếm sự kiện trong khoảng lấy mẫu. response_time_ms là thời gian khứ hồi của SELECT 1 qua kết nối giám sát, gồm độ trễ mạng, không phải trung bình độ trễ của mọi truy vấn nghiệp vụ. Dữ liệu tổng hợp mô phỏng cùng schema; lần đánh giá này không cần một phiên bản MySQL server.
+
+
+Cột dữ liệu
+Ý nghĩa
+Nguồn/đơn vị
+timestamp
+Thời điểm lấy mẫu
+ISO 8601 / datetime
+queries_per_second
+Thông lượng truy vấn
+QPS; thu thật: ΔQuestions/Δt
+connections
+Kết nối hiện có
+Threads_connected, kết nối
+slow_queries
+Truy vấn chậm trong khoảng
+ΔSlow_queries, sự kiện/khoảng
+connection_errors
+Kết nối thất bại trong khoảng
+ΔAborted_connects, sự kiện/khoảng
+response_time_ms
+Thời gian khứ hồi của probe
+SELECT 1; mili giây
+label
+1 bình thường; −1 bất thường
+Chỉ dùng đánh giá; loại khỏi đặc trưng
+Bảng 3.1. Schema thực tế của CSV giám sát MySQL
+Bộ CPU EC2 công khai của NAB được giữ làm luồng tham chiếu bổ sung [8], [11]. Chuỗi ec2_cpu_utilization_24ae8d.csv có 4.032 điểm cách nhau 5 phút; bản lưu trong project có hash SHA-256 ab446fbd8b9f37507eb2fdb06315826d8daeef02e241133ce06e0ee571ba53d9. Dữ liệu CPU này không xác lập tải cơ sở dữ liệu và không được dùng thay cho kết quả MySQL tổng hợp trong Chương 4. Đánh giá theo nhãn điểm của notebook cũng không phải NAB score theo cửa sổ của bài báo.
+
+Manifest docs/mysql_datasets_manifest.json lưu seed, hash của bốn CSV, các phép biến đổi và phạm vi sự kiện. K1 có 0 điểm bất thường; K2 và K3 có 44 điểm mỗi bộ; K4 có 43 điểm. Mỗi tệp đều có 1.008 dòng train bình thường và 432 dòng test; tỷ lệ bất thường trên test tương ứng 0%, 10,19%, 10,19% và 9,95%. Các tiền tố train giống nhau hoàn toàn.
+
+3.1.2. Tiền xử lý và trích xuất đặc trưng
+
+Pipeline MySQL kiểm tra đủ năm chỉ số, giá trị hữu hạn không âm, thời gian hợp lệ và duy nhất rồi sắp xếp theo timestamp. Dữ liệu sai bị từ chối; không tự điền 0, nội suy hoặc loại hàng. Trong bốn CSV được đánh giá, không có dòng bị loại. Luồng CSV một chỉ số có chính sách làm sạch riêng; không trộn số đếm của hai luồng.
+StandardScaler chỉ fit trên 1.008 dòng train rồi transform 432 dòng test. Mỗi vector đầu vào gồm queries_per_second, connections, response_time_ms, slow_queries và connection_errors. Lần chạy dùng include_time=False, không dùng đặc trưng lịch, cửa sổ trượt hoặc giá trị tương lai. Các kỹ thuật cửa sổ ở Chương 2 là hướng khảo sát, chưa phải thực nghiệm đã hoàn thành.
+Nhãn label dùng 1 cho bình thường và −1 cho bất thường, nhất quán với dự đoán của các estimator. label và scenario không được đưa vào đặc trưng hay dùng để lọc train. Nhãn chỉ được đối chiếu với 432 dự đoán test khi tính TP, FP, FN, TN, Precision, Recall và F1; lớp dương về mặt đánh giá là bất thường −1.
+3.2. Phương pháp thực nghiệm
+3.2.1. Môi trường thực nghiệm
+Lần chạy ngày 14/11/2026 sử dụng Windows, Python 3.10.9 trong môi trường C:\Users\User\DACN\.venv; NumPy 2.2.6, pandas 2.3.3, scikit-learn 1.7.2, Streamlit 1.65.0, FastAPI 0.162.0, Plotly 7.1.0 và PyMySQL 1.2.3. Các estimator học máy được triển khai bằng scikit-learn [12]; MAD là hàm dùng NumPy trong project. Không sử dụng PyOD trong lần thực nghiệm này.
+Máy đo có CPU Intel Core i7-11800H @ 2,30 GHz, 16 bộ xử lý logic; hệ điều hành trả tổng RAM vật lý khoảng 7,71 GiB. Thông tin CPU lấy từ registry, RAM từ GlobalMemoryStatusEx; không suy đoán cấu hình MySQL. Thời gian mô hình được đo bằng perf_counter trong một lượt chạy cho mỗi bộ dữ liệu, nên có ảnh hưởng khởi tạo và bộ nhớ đệm; chưa phải benchmark lặp nhiều lần.
+
+3.2.2. Quy trình tiến hành thí nghiệm
+
+Quy trình thực hiện gồm: đọc và kiểm tra CSV; sắp xếp theo thời gian; lấy 70% đầu làm train và 30% cuối làm test; fit StandardScaler và mô hình trên train; dự đoán test; tính kết quả mô hình gốc; áp dụng bộ lọc vận hành; lưu CSV dự đoán, JSON cấu hình/đánh giá và báo cáo. Lần chạy dùng tham số cố định, random_state=42 cho Isolation Forest; không tìm tham số trên test và chưa có một tập validation riêng.
+
+K1 mô phỏng nền dao động tự nhiên để đo FP. K2 chỉ tăng QPS; K3 tăng kết nối kèm số kết nối thất bại; K4 tăng thời gian phản hồi kèm truy vấn chậm. Các sự kiện được chèn hoàn toàn sau mốc train. Nhãn, thời gian bắt đầu/kết thúc và công thức chèn được cố định trước khi chạy mô hình, không chỉnh lại theo dự đoán.
+
+
+Kịch bản
+Thao tác dữ liệu
+Mục tiêu đo
+K1 – Bình thường
+mysql_normal.csv; không chèn sự kiện
+432 điểm test; đo FP
+K2 – Tăng truy vấn
+mysql_query_spike.csv; QPS × 5 + 100
+44 điểm, 17:39–18:22 UTC
+K3 – Tăng kết nối
+mysql_connection_spike.csv; connections × 4 + 90, errors + 3
+44 điểm, 19:40–20:23 UTC
+K4 – Suy giảm hiệu năng
+mysql_latency_spike.csv; latency × 9 + 90, slow_queries + 8
+43 điểm, 21:41–22:23 UTC
+Bảng 3.2. Bốn kịch bản đã thực hiện
+Bộ lọc vận hành chỉ giữ cảnh báo nếu mô hình đã gắn cờ và có ít nhất một chỉ số lệch nền quá dung sai train. Dung sai là max(3,5 × max(1,4826 × MAD, IQR/1,349), dung sai tuyệt đối, 5% × |trung vị train|). Dung sai tuyệt đối theo thứ tự năm chỉ số là [2; 2; 5; 1; 0]. Đây là chính sách demo tách khỏi estimator, không phải ngưỡng MySQL/SLA. Điểm quyết định và dự đoán gốc luôn được lưu để đánh giá riêng.
+
+
+Phương pháp
+Tham số cần ghi
+Cấu hình đã thực hiện
+MAD/robust Z-score
+Ngưỡng; cách gộp năm đặc trưng
+3,5; max |robust Z|; median/MAD train
+Isolation Forest
+n_estimators, max_samples, contamination
+100 cây; auto = 256 mẫu/cây; 0,01; random_state = 42
+LOF
+n_neighbors, contamination, novelty
+20 lân cận; contamination = 0,01; novelty = True; p = 2
+One-Class SVM
+kernel, nu, gamma, scaler
+RBF; nu = 0,01; gamma = scale; StandardScaler
+Bảng 3.3. Cấu hình mô hình đã chạy; mọi bộ chuẩn hóa đều fit train
+Công cụ hỗ trợ thực nghiệm: ANOMALY LAB
+
+ANOMALY LAB đã cung cấp luồng Cơ bản ba bước: chọn dữ liệu, phân tích và xem/tải kết quả. Luồng Nâng cao cho phép chọn thuật toán, tham số và xem cả dự đoán gốc/cảnh báo sau lọc. Frontend gửi CSV tới FastAPI; mô hình chỉ chạy ở backend. Khi API không kết nối được, giao diện báo lỗi thay vì tự tạo dự đoán thay thế.
+
+Chức năng so sánh hai bộ dữ liệu dùng chung mô hình và bộ chuẩn hóa học một lần từ tiền tố của bộ tham chiếu, rồi dự đoán hai phần test. Các thẻ số liệu thể hiện số mẫu kiểm tra, số thời điểm cảnh báo và trạng thái; biểu đồ có tooltip giá trị đo. Kết quả cũ được ẩn khi đổi dữ liệu/cấu hình. Hình dưới minh họa quy trình và dữ liệu thực nghiệm từ code; không được trình bày như ảnh chụp giao diện.
+
+
+Hình 3.1. Quy trình phân tích CSV và phạm vi học/kiểm tra trong ANOMALY LAB.
+
+
+Hình 3.2. Bốn bộ dữ liệu tổng hợp, mốc chia train/test và nhãn sự kiện.
+
+CHƯƠNG 4. KẾT QUẢ THỰC NGHIỆM VÀ ĐÁNH GIÁ
+
+Kết quả trong chương này được tính bằng scripts/evaluate_mysql_demo.py lúc 13:50 ngày 14/11/2026 (UTC+7), trên bốn CSV và môi trường mô tả ở Chương 3. Dữ liệu nguồn, hash, tham số, dự đoán và các bảng điểm được lưu trong reports/citation_review/project_evaluation_venv. Đây là kết quả chạy chương trình trên dữ liệu tổng hợp, không phải số liệu sao chép từ bài báo hoặc đo trực tiếp từ MySQL.
+
+4.1. Kết quả thực nghiệm từng thuật toán
+
+Mỗi tệp có 432 điểm test. Bảng 4.1 minh họa K2 với 44 bất thường và 388 điểm bình thường, dùng cảnh báo sau lọc vận hành. Thời gian là tổng train + predict do metadata mô hình ghi nhận, không gồm đọc CSV, StandardScaler dùng chung, tạo bằng chứng, HTTP hay hiển thị. Các số đo thời gian là một lượt chạy, không dùng để khẳng định thứ hạng tốc độ tổng thể.
+
+
+Thuật toán
+Số cảnh báo
+TP
+FP
+FN
+TN
+Thời gian (s)
+MAD
+44
+44
+0
+0
+388
+0,000227
+Isolation Forest
+0
+0
+0
+44
+388
+0,112816
+LOF
+44
+44
+0
+0
+388
+0,014021
+One-Class SVM
+44
+44
+0
+0
+388
+0,004080
+Bảng 4.1. Kết quả tự chạy trên K2 sau lọc vận hành
+Nguồn: evaluation.json và mysql_query_spike_predictions.csv của lần chạy 14/11/2026.
+Confusion matrix giữ thứ tự nhãn [1, −1], hàng là nhãn thật và cột là dự đoán, do đó ma trận bằng [[TN, FP], [FN, TP]]. Với K2, Isolation Forest có [[388, 0], [44, 0]], còn MAD, LOF và One-Class SVM có [[388, 0], [0, 44]]. Điều này cho thấy không có cảnh báo sai chưa đồng nghĩa mô hình phát hiện tốt: Isolation Forest bỏ sót toàn bộ 44 điểm bất thường trong kịch bản này.
+
+
+Hình 4.1. Confusion matrix của bốn phương pháp trên K2 sau lọc vận hành.
+
+
+Hình 4.2. Giá trị QPS, nhãn và cảnh báo của bốn phương pháp trên cùng 432 điểm test K2.
+
+4.2. So sánh và phân tích
+
+4.2.1. Bảng so sánh hiệu năng các mô hình
+
+
+Phương pháp
+Precision (%)
+Recall (%)
+F1 (%)
+FP trên K1
+Train + predict TB (s)
+MAD
+100,00
+100,00
+100,00
+0
+0,000236
+Isolation Forest
+66,67
+20,12
+26,78
+0
+0,110625
+LOF
+100,00
+100,00
+100,00
+0
+0,013112
+One-Class SVM
+100,00
+100,00
+100,00
+0
+0,003361
+Bảng 4.2. Trung bình không trọng số trên ba kịch bản bất thường sau lọc (%)
+Mỗi chỉ số trong Bảng 4.2 là trung bình của kết quả K2, K3, K4, không phải tính từ một confusion matrix gộp. Với Isolation Forest, Recall lần lượt là 0/44 = 0%, 2/44 = 4,55% và 24/43 = 55,81%; F1 là 0%, 8,70% và 71,64%. Precision trên K2 không xác định vì không có cảnh báo; để tương thích phần mềm, giá trị 0 theo quy ước được dùng khi lấy trung bình. Vì vậy Precision trung bình 66,67% không có nghĩa một phần ba cảnh báo hiện có là sai. Chưa có phép thử nhiều seed hay khoảng tin cậy.
+
+4.2.2. Phân tích ưu điểm và nhược điểm
+
+Kết quả mô hình gốc cần được đọc riêng. Trên K1, số FP gốc của MAD/Isolation Forest/LOF/One-Class SVM lần lượt là 48/11/5/8; sau lọc đều bằng 0. Trên K2, F1 gốc tương ứng là 70,97%/0%/94,62%/92,63%; sau lọc là 100%/0%/100%/100%. Trên K3, F1 gốc là 65,67%/7,27%/95,65%/92,63%; trên K4 là 64,18%/61,54%/94,51%/91,49%. Không được gọi các chỉ số sau lọc là chất lượng riêng của estimator.
+
+Với ba sự cố tổng hợp biên độ lớn, MAD, LOF và One-Class SVM cùng tìm đủ điểm sự kiện sau lọc. Isolation Forest bỏ sót nhiều điểm với cấu hình đã chọn trong thực nghiệm. Các số liệu chỉ hỗ trợ trả lời RQ1/RQ2 trong phạm vi bộ demo; không phủ định kết quả AUC trong bài báo gốc vì khác dữ liệu, chỉ số và cách đặt ngưỡng [3]. RQ3 về lợi ích cửa sổ trượt hoặc so sánh đơn biến/đa biến chưa được kiểm chứng do chưa có thí nghiệm loại bỏ thành phần.
+
+4.3. Đánh giá khả năng áp dụng vào giám sát cơ sở dữ liệu
+
+Ứng dụng thực tế đòi hỏi quy trình thu thập chỉ số liên tục, đánh dấu thời gian đồng bộ, xử lý thiếu và cơ chế cập nhật mức nền. Mô hình cần tạo ra cảnh báo có thể giải thích ở mức vận hành: thời điểm, chỉ số nào tăng hoặc giảm, giá trị nền tham chiếu, mức độ khác biệt và liên kết tới nhật ký liên quan. Mức cảnh báo phải hỗ trợ quyết định của quản trị viên thay vì tự động coi mọi điểm ngoại lai là cuộc tấn công.
+
+Từ góc độ hiệu năng, độ trễ tổng gồm thời gian lấy mẫu, tiền xử lý, suy luận và hiển thị. Nếu cần cảnh báo gần thời gian thực, tần suất lấy mẫu và độ dài cửa sổ phải được cân đối với năng lực hệ thống. Những thay đổi theo mùa vụ hoặc tăng trưởng người dùng cần được theo dõi vì mô hình có thể bị “trôi” theo thời gian.
+
+Bản nghiên cứu hiện phù hợp nhất với vai trò một nguyên mẫu hỗ trợ đánh giá thuật toán và trực quan hóa cảnh báo. Để triển khai trong sản xuất, cần bổ sung kiểm thử dữ liệu thật trong thời gian dài, quyền truy cập chỉ đọc, lưu lịch sử, kiểm soát truy cập và cơ chế phản hồi cảnh báo.
+
+Giới hạn thực nghiệm: các sự kiện được chèn có biên độ lớn, chỉ có ba dạng bất thường, train được thiết kế bình thường và các bộ chia sẻ một nền. Bộ lọc được định nghĩa sẵn nhưng vẫn đóng góp đáng kể vào điểm số. Chưa đo tải MySQL thật, độ trễ cảnh báo từ đầu đến cuối, độ bền trước trôi dữ liệu hoặc nhiều lần lặp. Do đó không suy rộng F1 = 100% thành độ chính xác vận hành thực tế.
+
+CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+
+5.1. Kết luận
+
+Đề tài đã triển khai được nguyên mẫu phát hiện bất thường trên năm chỉ số hoạt động MySQL, gồm MAD/robust Z-score, Isolation Forest, LOF và One-Class SVM; đồng thời xây dựng giao diện Streamlit, API FastAPI, biểu đồ và chức năng xuất bằng chứng. Phần nền tảng phân biệt bất thường điểm/ngữ cảnh/tập thể, phép đánh giá theo điểm và đánh giá có xét thời điểm phát hiện trong NAB.
+
+Thực nghiệm trên bốn CSV tổng hợp có thể tái tạo đã được thực hiện với cách chia 1.008/432, chuẩn hóa và huấn luyện chỉ trên train. Sau lọc vận hành, MAD, LOF và One-Class SVM đạt Precision/Recall/F1 bằng 100% trên ba sự cố được thiết kế; Isolation Forest có Recall 0%, 4,55% và 55,81%. Dự đoán gốc, ảnh hưởng của bộ lọc và quy ước khi mẫu số bằng 0 đã được công bố riêng để tránh diễn giải quá mức.
+
+Kết quả cho thấy nguyên mẫu phù hợp để trình diễn quy trình kiểm tra dữ liệu, huấn luyện, xem cảnh báo và đối chiếu nhãn. Nó chưa chứng minh một thuật toán tốt nhất cho mọi hệ MySQL; chưa có dữ liệu tải thật để đánh giá khả năng tổng quát. Số liệu công bố từ Liu và cộng sự hoặc Ahmad và cộng sự là bằng chứng nghiên cứu liên quan, không phải thành tích đo được của hệ thống này [3], [8].
+
+5.2. Hướng phát triển trong tương lai
+
+Ưu tiên tiếp theo là thu chuỗi số đo MySQL thật trong nhiều ngày với tài khoản chỉ đọc, TLS và lịch sự kiện độc lập để có nhãn đáng tin cậy. Cần đánh giá nhiều mức tải, bất thường nhỏ/kéo dài, reset bộ đếm và trôi phân bố. Tách validation để chọn tham số, giữ test độc lập; lặp nhiều seed và báo cáo biến thiên hoặc khoảng tin cậy trước khi xếp hạng mô hình.
+
+Cần thực hiện thí nghiệm riêng để trả lời RQ3: đơn biến so với năm biến, có/không có đặc trưng lịch và cửa sổ trượt nhân quả, mô hình gốc so với chính sách lọc. Nếu chuyển sang cảnh báo liên tục, phải bổ sung lịch lấy mẫu, lưu lịch sử, cơ chế phản hồi, kiểm soát truy cập và đo độ trễ từ lúc lấy mẫu đến khi cảnh báo.
+
+Khả năng tích hợp PostgreSQL, tự động cập nhật nền và giải thích cảnh báo sâu hơn chỉ nên triển khai sau khi có nhu cầu và phép đo phù hợp. Tiếp tục duy trì thư viện tài liệu tham khảo, phiên bản dữ liệu và mã nguồn để báo cáo có thể được tái lập.
+
+TÀI LIỆU THAM KHẢO
+
+[1]	V. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,” ACM Comput. Surv., vol. 41, no. 3, Art. no. 15, Jul. 2009, doi: 10.1145/1541880.1541882.
+[2]	A. Blázquez-García, A. Conde, U. Mori, and J. A. Lozano, “A review on outlier/anomaly detection in time series data,” ACM Comput. Surv., vol. 54, no. 3, Art. no. 56, Apr. 2021, doi: 10.1145/3444690.
+[3]	F. T. Liu, K. M. Ting, and Z.-H. Zhou, “Isolation forest,” in Proc. 8th IEEE Int. Conf. Data Mining, Pisa, Italy, 2008, pp. 413–422, doi: 10.1109/ICDM.2008.17.
+[4]	M. M. Breunig, H.-P. Kriegel, R. T. Ng, and J. Sander, “LOF: Identifying density-based local outliers,” ACM SIGMOD Rec., vol. 29, no. 2, pp. 93–104, 2000, doi: 10.1145/335191.335388.
+[5]	scikit-learn developers, “Novelty and outlier detection,” scikit-learn documentation. Accessed: Nov. 14, 2026. [Online]. Available: https://scikit-learn.org/stable/modules/outlier_detection.html
+[6]	B. Schölkopf, J. C. Platt, J. Shawe-Taylor, A. J. Smola, and R. C. Williamson, “Estimating the support of a high-dimensional distribution,” Neural Comput., vol. 13, no. 7, pp. 1443–1471, Jul. 2001, doi: 10.1162/089976601750264965.
+[7]	NIST/SEMATECH, “Detection of outliers,” e-Handbook of Statistical Methods, sec. 1.3.5.17. Accessed: Nov. 14, 2026. [Online]. Available: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
+[8]	S. Ahmad, A. Lavin, S. Purdy, and Z. Agha, “Unsupervised real-time anomaly detection for streaming data,” Neurocomputing, vol. 262, pp. 134–147, Nov. 2017, doi: 10.1016/j.neucom.2017.04.070.
+[9]	Oracle, “SHOW STATUS statement,” MySQL 8.4 Reference Manual, sec. 15.7.7.37. Accessed: Nov. 14, 2026. [Online]. Available: https://dev.mysql.com/doc/refman/8.4/en/show-status.html
+[10]	Oracle, “Server status variables,” MySQL 8.4 Reference Manual, sec. 7.1.10. Accessed: Nov. 14, 2026. [Online]. Available: https://dev.mysql.com/doc/refman/8.4/en/server-status-variables.html
+[11]	Numenta, “Numenta Anomaly Benchmark (NAB),” GitHub. Accessed: Nov. 14, 2026. [Online]. Available: https://github.com/numenta/NAB
+[12]	F. Pedregosa et al., “Scikit-learn: Machine learning in Python,” J. Mach. Learn. Res., vol. 12, no. 85, pp. 2825–2830, 2011. [Online]. Available: https://jmlr.org/papers/v12/pedregosa11a.html
+
+PHỤ LỤC A. KỊCH BẢN DEMO ANOMALY LAB
+Bước 1. Chạy backend FastAPI và frontend Streamlit theo README. Mở chế độ Cơ bản, chọn dữ liệu mẫu K1 rồi bấm Bắt đầu phân tích. Xem số điểm test, số cảnh báo và báo cáo. K1 không có nhãn bất thường nên dùng số FP để đánh giá; không dùng Recall/F1 của K1 để kết luận khả năng phát hiện.
+Bước 2. Chọn Hoạt động bất thường để dùng K2 (mysql_query_spike.csv), hoặc mở Nâng cao để chọn K3/K4. Giữ cấu hình mô hình và tỷ lệ chia tập khi đối chiếu. Khi tải CSV riêng, dùng schema ở Bảng 3.1; nhãn label là 1/−1 và không thuộc tập đặc trưng.
+Bước 3. Trong Nâng cao, đối chiếu Dự đoán mô hình gốc và Cảnh báo sau lọc. Đọc confusion matrix, TP/FP/FN/TN và Precision/Recall/F1. Trên K2, cần trình bày cả trường hợp Isolation Forest bỏ sót 44 điểm; không thay nhãn hoặc tham số theo kết quả test để tạo bảng đẹp.
+Bước 4. Chọn So sánh dữ liệu để dùng chung một mô hình tham chiếu cho hai bộ; tải CSV/JSON và báo cáo để kiểm tra lại. Giải thích rằng 50 → 51 chưa tự động là sự cố: cảnh báo sau lọc yêu cầu mô hình gắn cờ và một chỉ số vượt dung sai train. Dấu hiệu trên biểu đồ chưa xác minh nguyên nhân; cần đối chiếu log và ngữ cảnh vận hành.
+
+PHỤ LỤC B. TRUY VẤN MINH HỌA THU THẬP CHỈ SỐ MYSQL
+
+Collector thực tế đọc các bộ đếm toàn cục và thăm dò SELECT 1. MySQL phân biệt Questions (các câu lệnh do client thực thi) với Queries (có thể bao gồm câu lệnh trong stored program); báo cáo dùng Questions theo đúng collector [9], [10]. Khi server reset hoặc bộ đếm giảm, đợt thu bị từ chối thay vì tạo tốc độ âm.
+SHOW GLOBAL STATUS
+WHERE Variable_name IN (
+'Questions', 'Threads_connected',
+'Slow_queries', 'Aborted_connects'
+);
+queries_per_second = (Questionst − Questionst₋₁)/Δt (B.1)
+Threads_connected được đọc như giá trị tức thời. slow_queries = ΔSlow_queries và connection_errors = ΔAborted_connects là số sự kiện trong khoảng, không phải tỷ lệ mỗi phút. response_time_ms được đo riêng bằng thời gian khứ hồi SELECT 1. Các số đo có cả ảnh hưởng của hoạt động giám sát; không truy vấn hoặc sửa bảng nghiệp vụ.
+

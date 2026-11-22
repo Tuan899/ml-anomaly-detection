@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 
-from scripts.generate_mysql_demo import build_demo_frames
+from scripts.generate_mysql_demo import build_mysql_datasets
 from src.dbms_monitoring import MYSQL_METRICS, load_mysql_metrics, run_dbms_detection
 from src.models import evaluate_predictions
 
@@ -109,10 +109,10 @@ class DBMSMonitoringTests(unittest.TestCase):
             run_dbms_detection(frame, label_col="mad_raw_prediction", model_names="mad")
 
     def test_evaluations_recompute_from_exact_held_out_predictions(self):
-        frame = pd.read_csv(ROOT / "data" / "mysql_anomalous.csv")
+        frame = pd.read_csv(ROOT / "data" / "mysql_query_spike.csv")
         result = run_dbms_detection(frame.iloc[::-1], label_col="label")
         truth = result.predictions["label"]
-        self.assertEqual(len(result.predictions), 432)
+        self.assertEqual(len(result.predictions), 3)
         self.assertTrue(result.predictions["timestamp"].is_monotonic_increasing)
         for name in result.metadata["model_names"]:
             for raw in (False, True):
@@ -127,17 +127,21 @@ class DBMSMonitoringTests(unittest.TestCase):
         self.assertEqual(len(exported), len(result.predictions))
 
     def test_demo_baseline_reproducibility_and_test_only_incidents(self):
-        normal, anomalous, incidents = build_demo_frames()
-        again, _, _ = build_demo_frames()
+        datasets = build_mysql_datasets()
+        normal = datasets["mysql_normal.csv"]
+        again = build_mysql_datasets()["mysql_normal.csv"]
         pd.testing.assert_frame_equal(normal, again)
-        self.assertGreater(len(normal), 1000)
-        split = 1008
-        pd.testing.assert_frame_equal(normal.iloc[:split], anomalous.iloc[:split])
+        self.assertEqual(len(normal), 10)
+        split = 7
         self.assertTrue((normal["label"] == 1).all())
-        self.assertTrue((anomalous.iloc[:split]["label"] == 1).all())
-        self.assertEqual({incident["scenario"] for incident in incidents},
-                         {"query_spike", "connection_spike", "latency_spike", "combined_pressure"})
-        manifest = json.loads((ROOT / "data" / "mysql_demo_manifest.json").read_text(encoding="utf-8"))
+        for name, frame in datasets.items():
+            with self.subTest(dataset=name):
+                self.assertEqual(len(frame), 10)
+                pd.testing.assert_frame_equal(normal.iloc[:split], frame.iloc[:split])
+                self.assertTrue((frame.iloc[:split]["label"] == 1).all())
+                if name != "mysql_normal.csv":
+                    self.assertTrue((frame.iloc[split:]["label"] == -1).any())
+        manifest = json.loads((ROOT / "docs" / "mysql_datasets_manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["recommended_split_index"], split)
 
 

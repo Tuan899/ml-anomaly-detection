@@ -1,0 +1,11 @@
+timestamp,queries_per_second,connections,response_time_ms,slow_queries,connection_errors,label,scenario
+2026-10-01 09:00:00,50,30,15.0,0,0,1,normal_natural_variation
+2026-10-01 09:01:00,52,31,16.0,1,0,1,normal_natural_variation
+2026-10-01 09:02:00,49,29,14.0,0,0,1,normal_natural_variation
+2026-10-01 09:03:00,51,30,15.0,0,0,1,normal_natural_variation
+2026-10-01 09:04:00,48,28,14.5,1,0,1,normal_natural_variation
+2026-10-01 09:05:00,53,32,16.5,0,0,1,normal_natural_variation
+2026-10-01 09:06:00,50,30,15.5,0,0,1,normal_natural_variation
+2026-10-01 09:07:00,51,31,180.0,8,0,-1,latency_spike
+2026-10-01 09:08:00,49,29,220.0,10,0,-1,latency_spike
+2026-10-01 09:09:00,52,30,16.0,0,0,1,normal_natural_variation

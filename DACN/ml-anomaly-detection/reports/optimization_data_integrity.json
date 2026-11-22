@@ -1,0 +1,23 @@
+{
+  "mysql_normal.csv": {
+    "sha256": "210f4cd42987a4cda6fd4b8c95d7b2511f8cffa28dfca693824e0249ebc33492",
+    "matches_generator_and_manifest": true
+  },
+  "mysql_query_spike.csv": {
+    "sha256": "fa02cdc206162e397a2b70505cef74c886e165bf55d3080cf2bec6bf5c83e679",
+    "matches_generator_and_manifest": true
+  },
+  "mysql_connection_spike.csv": {
+    "sha256": "3c9bfd071bb0b5f80b36f1272def76394e47326c6a1302c3a40e741931f041f7",
+    "matches_generator_and_manifest": true
+  },
+  "mysql_latency_spike.csv": {
+    "sha256": "3562a6a18e80ac7c029eda36b9162fb8d63bce21d1b92a6277797162e741ca30",
+    "matches_generator_and_manifest": true
+  },
+  "mysql_anomalous.csv": {
+    "sha256": "902f62b9febc762641be741c7c7557106130799d44020ad01bc79cb8d3ec5a15",
+    "legacy_compatibility_byte_identical": true,
+    "incidents": 4
+  }
+}

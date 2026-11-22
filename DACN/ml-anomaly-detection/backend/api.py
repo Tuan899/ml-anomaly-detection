@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from io import BytesIO
 import json
 from typing import Literal
@@ -15,15 +16,44 @@ from src.notebook_reference import run_notebook_reference
 from src.pipeline import run_detection
 from src.dbms_monitoring import run_dbms_detection
 from src.dbms_comparison import compare_dbms_datasets
+from backend.monitoring_api import router as monitoring_router, shutdown_monitoring
+from backend.admin_api import router as admin_router, shutdown_admin
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
-app = FastAPI(title="ANOMALY LAB · DBMS Monitoring API", version="3.0.0")
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    try:
+        yield
+    finally:
+        shutdown_admin()
+        shutdown_monitoring()
+
+
+app = FastAPI(title="ANOMALY LAB · DBMS Monitoring API", version="4.0.0", lifespan=lifespan)
+app.include_router(monitoring_router)
+app.include_router(admin_router)
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+def _result_payload(result, include_context: bool) -> dict:
+    """Serialize observations in the analysis worker, preserving the HTTP contract."""
+    summary = result.summary(date_unit="ns" if include_context else "ms")
+    summary["rows"] = len(result.frame)
+    summary["models"] = summary["anomalies"]
+    if include_context:
+        columns = [result.metadata["timestamp_col"], result.metadata["value_col"]]
+        columns = list(dict.fromkeys(columns + result.metadata.get("metric_cols", [])))
+        if result.metadata["label_col"]:
+            columns.append(result.metadata["label_col"])
+        summary["context"] = json.loads(result.frame[columns].to_json(
+            orient="records", date_format="iso", date_unit="ns", double_precision=15,
+        ))
+    return summary
 
 
 @app.post("/detect")
@@ -65,24 +95,24 @@ async def detect(
         raise HTTPException(status_code=413, detail="CSV upload exceeds 10 MiB")
     if not content:
         raise HTTPException(status_code=422, detail="CSV upload is empty")
-    try:
-        # Model fitting is CPU-bound and must not block the ASGI event loop.
+
+    def analyze() -> dict:
+        # Fitting and DataFrame serialization both belong outside the event loop.
         if analysis_mode == "notebook_reference":
-            result = await run_in_threadpool(
-                run_notebook_reference, BytesIO(content),
+            result = run_notebook_reference(
+                BytesIO(content),
                 timestamp_col=timestamp_col, value_col=value_col,
             )
         elif analysis_mode == "dbms":
-            result = await run_in_threadpool(
-                run_dbms_detection, BytesIO(content),
+            result = run_dbms_detection(
+                BytesIO(content),
                 timestamp_col=timestamp_col, value_col=value_col, label_col=label_col or None,
                 train_fraction=train_fraction, contamination=contamination,
                 model_names=selected, include_time=include_time, split_index=split_index,
                 noise_guard=noise_guard, deviation_threshold=deviation_threshold,
             )
         else:
-            result = await run_in_threadpool(
-                run_detection,
+            result = run_detection(
                 BytesIO(content),
                 timestamp_col=timestamp_col,
                 value_col=value_col,
@@ -93,21 +123,10 @@ async def detect(
                 include_time=include_time,
                 split_index=split_index,
             )
-        summary = result.summary(date_unit="ns" if include_context else "ms")
-        # Preserve the original response fields for existing API clients.
-        summary["rows"] = len(result.frame)
-        summary["models"] = summary["anomalies"]
-        if include_context:
-            columns = [result.metadata["timestamp_col"], result.metadata["value_col"]]
-            columns = list(dict.fromkeys(columns + result.metadata.get("metric_cols", [])))
-            if result.metadata["label_col"]:
-                columns.append(result.metadata["label_col"])
-            summary["context"] = json.loads(
-                result.frame[columns].to_json(
-                    orient="records", date_format="iso", date_unit="ns", double_precision=15
-                )
-            )
-        return summary
+        return _result_payload(result, include_context)
+
+    try:
+        return await run_in_threadpool(analyze)
     except (ValueError, TypeError, UnicodeDecodeError, pd.errors.ParserError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -145,27 +164,18 @@ async def compare(
         if not content:
             raise HTTPException(status_code=422, detail=f"{role} CSV upload is empty")
         contents[role] = content
-    try:
-        runs = await run_in_threadpool(
-            compare_dbms_datasets, BytesIO(contents["normal"]), BytesIO(contents["anomalous"]),
+
+    def analyze() -> dict:
+        runs = compare_dbms_datasets(
+            BytesIO(contents["normal"]), BytesIO(contents["anomalous"]),
             timestamp_col=timestamp_col, value_col=value_col, label_col=label_col or None,
             train_fraction=train_fraction, contamination=contamination, model_names=selected,
             include_time=include_time, split_index=split_index, noise_guard=noise_guard,
             deviation_threshold=deviation_threshold,
         )
-        response = {}
-        for role, result in runs.items():
-            summary = result.summary(date_unit="ns" if include_context else "ms")
-            summary["rows"] = len(result.frame)
-            summary["models"] = summary["anomalies"]
-            if include_context:
-                columns = [timestamp_col, *result.metadata["metric_cols"]]
-                if result.metadata["label_col"]:
-                    columns.append(result.metadata["label_col"])
-                summary["context"] = json.loads(result.frame[columns].to_json(
-                    orient="records", date_format="iso", date_unit="ns", double_precision=15,
-                ))
-            response[role] = summary
-        return response
+        return {role: _result_payload(result, include_context) for role, result in runs.items()}
+
+    try:
+        return await run_in_threadpool(analyze)
     except (ValueError, TypeError, UnicodeDecodeError, pd.errors.ParserError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

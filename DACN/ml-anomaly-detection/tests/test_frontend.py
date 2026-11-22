@@ -18,7 +18,7 @@ from streamlit.testing.v1 import AppTest
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-APP_PATH = PROJECT_ROOT / "frontend" / "app.py"
+APP_PATH = PROJECT_ROOT / "frontend" / "research_app.py"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 if str(Path(__file__).resolve().parent) not in sys.path:
@@ -47,16 +47,17 @@ class FrontendWorkflowTests(unittest.TestCase):
     def setUp(self) -> None:
         self.transport = APITransport().__enter__()
         self.addCleanup(self.transport.__exit__, None, None, None)
-        self.app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+        self.app = AppTest.from_file(APP_PATH, default_timeout=60)
+        self.app.session_state["interface_mode"] = "Cơ bản"
+        self.app.run()
         self.assert_no_exception()
         self.app.radio(key="interface_mode").set_value("Nâng cao").run()
         self.assert_no_exception()
         self.app.radio(key="workspace_mode").set_value("CSV một chỉ số / notebook NAB").run()
         self.assert_no_exception()
-        # Keep these tests on the small editable workflow so their validation,
-        # optional-label, and model-configuration coverage remains meaningful.
-        sample = self.app.selectbox(key="sample_dataset")
-        sample.set_value("Mẫu ngắn · 19 điểm").run()
+        # Exercise the retained editable CSV workflow with an in-memory fixture;
+        # no retired delivery files are restored to the data directory.
+        self.upload(csv_fixture())
         self.assert_no_exception()
 
     def assert_no_exception(self) -> None:
@@ -92,7 +93,7 @@ class FrontendWorkflowTests(unittest.TestCase):
         self.assertTrue(any("2. Cấu hình phân tích" == item.value for item in self.app.header))
         self.transport.mock_post.assert_not_called()
 
-    def test_short_sample_runs_all_models_and_shows_current_results(self) -> None:
+    def test_uploaded_fixture_runs_all_models_and_shows_current_results(self) -> None:
         self.run_analysis(mad_only=False)
         self.transport.mock_post.assert_called_once()
         self.assertEqual("/detect", self.transport.requests[0].url.path)
@@ -262,13 +263,16 @@ class FrontendWorkflowTests(unittest.TestCase):
         self.assertEqual(2, len(self.app.download_button))
         self.assertAlmostEqual(0.02, self.app.session_state["detection_run"].metadata["contamination"])
 
-    def test_switching_to_upload_hides_previous_source_results(self) -> None:
+    def test_switching_data_source_hides_previous_upload_results(self) -> None:
         self.run_analysis()
+        previous_requests = self.transport.mock_post.call_count
         source = self.app.radio(key="data_source")
-        source.set_value(source.options[1]).run()
+        source.set_value(source.options[0]).run()
         self.assert_no_exception()
         self.assert_no_export()
-        self.assertTrue(self.app.button(key="run_analysis").proto.disabled)
+        # The bundled NAB sample is valid and can be analyzed explicitly.
+        self.assertFalse(self.app.button(key="run_analysis").proto.disabled)
+        self.assertEqual(previous_requests, self.transport.mock_post.call_count)
         self.assertEqual(0, len(self.app.metric))
 
     def test_replacing_upload_resets_column_choices_and_hides_export(self) -> None:

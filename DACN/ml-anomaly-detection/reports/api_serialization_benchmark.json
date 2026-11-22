@@ -1,0 +1,46 @@
+﻿{
+  "rows": 100000,
+  "test_rows": 30000,
+  "repeats": 3,
+  "scope": "result.summary and context preparation only; excludes fitting and final HTTP encoding",
+  "median": {
+    "before_inline": {
+      "preparation_ms": 388.09,
+      "maximum_loop_delay_ms": 386.31
+    },
+    "after_worker": {
+      "preparation_ms": 472.57,
+      "maximum_loop_delay_ms": 140.05
+    }
+  },
+  "measurements": {
+    "before_inline": [
+      {
+        "preparation_ms": 361.6207999875769,
+        "maximum_loop_delay_ms": 359.7317999887746
+      },
+      {
+        "preparation_ms": 429.21210001804866,
+        "maximum_loop_delay_ms": 427.46019998635165
+      },
+      {
+        "preparation_ms": 388.0924000113737,
+        "maximum_loop_delay_ms": 386.30849999794737
+      }
+    ],
+    "after_worker": [
+      {
+        "preparation_ms": 459.82329998514615,
+        "maximum_loop_delay_ms": 140.0493999903556
+      },
+      {
+        "preparation_ms": 489.90169999888167,
+        "maximum_loop_delay_ms": 143.30889998422936
+      },
+      {
+        "preparation_ms": 472.57370001170784,
+        "maximum_loop_delay_ms": 136.9045999967493
+      }
+    ]
+  }
+}

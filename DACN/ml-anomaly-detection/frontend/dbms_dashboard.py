@@ -12,8 +12,8 @@ import streamlit as st
 
 from frontend.api_client import BackendError, detect_via_api, get_backend_url
 from frontend.dbms_charts import build_trend_figure
+from frontend.demo_data import ANOMALOUS_SAMPLES, NORMAL_SAMPLE
 from src.data_prep import read_csv_frame
-from src.mysql_collector import MySQLCollectionError, collect_mysql_metrics
 
 METRICS = {
     "queries_per_second": "Truy vấn mỗi giây (QPS)",
@@ -30,46 +30,15 @@ def _clear_results() -> None:
         st.session_state.pop(key, None)
 
 
-def _mysql_source() -> tuple[bytes | None, str]:
-    st.info("Thu thập một đợt số liệu thực tế bằng tài khoản giám sát chỉ đọc. Sau đó bấm Chạy phát hiện; ứng dụng không tự theo dõi liên tục.")
-    st.caption("QPS = ΔQuestions / số giây thực tế; kết nối = Threads_connected; truy vấn chậm = ΔSlow_queries; kết nối thất bại = ΔAborted_connects. Bộ đếm bao gồm cả hoạt động của trình giám sát.")
-    with st.form("mysql_connection"):
-        left, right = st.columns(2)
-        host = left.text_input("Máy chủ MySQL", value="127.0.0.1", key="mysql_host")
-        port = right.number_input("Cổng MySQL", min_value=1, max_value=65535, value=3306, key="mysql_port")
-        user = left.text_input("Tài khoản chỉ đọc", value="anomaly_monitor", key="mysql_user")
-        password = right.text_input("Mật khẩu", type="password", key="mysql_password")
-        database = left.text_input("CSDL mặc định (tùy chọn)", key="mysql_database")
-        ssl_ca = right.text_input("Đường dẫn chứng chỉ CA trên máy chạy Streamlit (tùy chọn)", key="mysql_ca")
-        samples = left.number_input("Số mẫu thu thập", min_value=4, max_value=600, value=60, step=1, key="mysql_samples")
-        interval = right.number_input("Khoảng lấy mẫu (giây)", min_value=0.1, max_value=60.0, value=1.0, step=0.1, key="mysql_interval")
-        no_tls = st.checkbox("Tắt TLS cho MySQL demo cục bộ", value=False, key="mysql_no_tls")
-        st.caption("Mặc định xác minh TLS và tên máy chủ. Chỉ tắt TLS khi dùng môi trường cục bộ đã kiểm soát. Mật khẩu chỉ nằm trong phiên giao diện, không gửi tới API phân tích hay tệp kết quả.")
-        submitted = st.form_submit_button("Thu thập chỉ số MySQL", key="mysql_collect")
-    public_settings = dict(host=host, port=int(port), user=user, database=database or None,
-                           samples=int(samples), interval_seconds=float(interval), ssl_ca=ssl_ca or None, ssl_disabled=no_tls)
-    signature = sha256(json.dumps(public_settings, sort_keys=True).encode()).hexdigest()
-    st.caption(f"Thời gian tối thiểu dự kiến: {samples * interval:.1f} giây, cộng thời gian phản hồi. Nên thu thập từ 100 mẫu và chọn giai đoạn đầu đã biết là ổn định để huấn luyện.")
-    if submitted:
-        _clear_results()
-        st.session_state.pop("mysql_snapshot", None)
-        st.session_state.pop("mysql_snapshot_signature", None)
-        progress = st.progress(0.0, text="Đang đọc các bộ đếm MySQL...")
-        try:
-            frame = collect_mysql_metrics(**public_settings, password=password,
-                progress_callback=lambda completed, total: progress.progress(completed / total, text=f"Đã thu thập {completed}/{total} mẫu thực tế"))
-            content = frame.to_csv(index=False).encode("utf-8")
-            st.session_state["mysql_snapshot"] = content
-            st.session_state["mysql_snapshot_signature"] = signature
-            st.success(f"Đã thu thập {len(frame)} mẫu. Chưa huấn luyện mô hình; kiểm tra dữ liệu rồi bấm Chạy phát hiện.")
-        except MySQLCollectionError as exc:
-            st.error(str(exc))
-        finally:
-            progress.empty()
-    if st.session_state.get("mysql_snapshot_signature") != signature:
-        return None, ""
-    st.warning("response_time_ms là thời gian khứ hồi của SELECT 1 qua kết nối giám sát, gồm độ trễ mạng; không phải trung bình mọi truy vấn nghiệp vụ. Dữ liệu trực tiếp chưa có nhãn, nên không tính Precision/Recall/F1.")
-    return st.session_state["mysql_snapshot"], "mysql_live_metrics.csv"
+def _source_notice(kind: str) -> None:
+    if kind == "synthetic":
+        title = "Dữ liệu mẫu mô phỏng"
+        detail = "Dùng để thử thao tác và kiểm tra kịch bản đã gắn nhãn. Chất lượng trên máy chủ thật cần được đánh giá bằng dữ liệu thu thực tế."
+    else:
+        title = "CSV do bạn cung cấp"
+        detail = "Ứng dụng chưa xác minh nguồn số đo và nhãn. Kiểm tra đơn vị, khoảng lấy mẫu và giai đoạn hoạt động bình thường trước khi chạy."
+    tone = "simulated" if kind == "synthetic" else "unknown"
+    st.markdown(f'<div class="source-notice source-{tone}"><strong>{title}</strong><p>{detail}</p></div>', unsafe_allow_html=True)
 
 
 def _show_trend(run, model: str, metric: str, dark: bool, key: str,
@@ -86,6 +55,7 @@ def _results(run, source: str, dark: bool, show_table, show_confusion) -> None:
     alerts = data[[f"{name}_prediction" for name in names]].eq(-1).any(axis=1)
     count = int(alerts.sum())
     st.subheader("3. Kết quả giám sát hoạt động CSDL")
+    _source_notice(meta.get("source_kind", "upload"))
     st.caption(f"Nguồn: {source} · {meta['train_rows']} mẫu huấn luyện · {len(data)} mẫu kiểm tra · Thời gian UTC.")
     if count:
         st.warning(f"Phát hiện dấu hiệu bất thường: {count} thời điểm cần quản trị viên kiểm tra trong tập kiểm tra.")
@@ -210,53 +180,70 @@ def _results(run, source: str, dark: bool, show_table, show_confusion) -> None:
             st.json(meta.get("parameters", {}))
     warning_text = {
         "Suspected indicators": "Chỉ số lệch nền là bằng chứng quan sát, chưa xác định nguyên nhân.",
-        "Tolerance floors": "Dung sai mặc định dành cho demo; chưa được hiệu chỉnh theo công suất hoặc SLA MySQL thực tế.",
+        "Tolerance floors": "Dung sai mặc định dành cho demo; chưa được hiệu chỉnh theo công suất hoặc SLA thực tế.",
         "Operational alerts": "Lọc dao động có thể bỏ sót dấu hiệu nhỏ hoặc thay đổi tương quan; hãy xem cả dự đoán và đánh giá gốc.",
         "Small dataset": "Dữ liệu ít hơn 100 mẫu, chưa đủ để kết luận chất lượng phát hiện.",
         "No ground-truth": "Không có nhãn tham chiếu: không tính Precision, Recall, F1 hay confusion matrix.",
         "Test labels contain no anomalies": "Tập kiểm tra không có bất thường có nhãn; hãy kiểm tra số cảnh báo nhầm, chưa kết luận khả năng phát hiện từ Recall/F1.",
         "Training labels contain anomalies": "Tập huấn luyện có nhãn bất thường. Mô hình vẫn học không giám sát, không dùng nhãn để lọc hàng; nền nhiễm bất thường có thể giảm độ nhạy.",
-        "Calendar features": "Đã thêm đặc trưng lịch; cảnh báo sau lọc vẫn cần ít nhất một chỉ số MySQL lệch nền.",
+        "Calendar features": "Đã thêm đặc trưng lịch; cảnh báo sau lọc vẫn cần ít nhất một chỉ số lệch nền.",
     }
     with st.expander("Lưu ý nghiên cứu và giới hạn"):
         for message in meta.get("warnings", []):
             st.caption(next((translated for prefix, translated in warning_text.items() if message.startswith(prefix)), str(message)))
     st.divider()
+    st.markdown("#### Lưu kết quả phân tích")
+    st.caption("CSV chứa toàn bộ dự đoán của phần kiểm tra, điểm mô hình và các chỉ số lệch nền. JSON giữ kết quả, tham số và thông tin của lần chạy để đối chiếu lại.")
     csv, export = st.columns(2)
-    csv.download_button("Tải dự đoán CSV", run.export_csv(), "mysql_predictions.csv", "text/csv", key="dbms_download_csv", width="stretch")
+    csv.download_button("Tải dự đoán CSV", run.export_csv(), "du_doan.csv", "text/csv", key="dbms_download_csv", width="stretch")
     export.download_button("Tải kết quả và cấu hình JSON", json.dumps(run.summary(date_unit="ns"), ensure_ascii=False, indent=2),
-                           "mysql_results.json", "application/json", key="dbms_download_json", width="stretch")
+                           "ket_qua.json", "application/json", key="dbms_download_json", width="stretch")
 
 
 def _help() -> None:
-    st.markdown("1. Chọn bộ kiểm thử, tải CSV năm chỉ số hoặc thu thập MySQL.\n2. Kiểm tra thời gian, đơn vị, nhãn 1/-1 và phần đầu dùng làm giai đoạn ổn định.\n3. Giữ bốn thuật toán và tỷ lệ train 70%, bấm Chạy phát hiện.\n4. Xem trạng thái, biểu đồ, giá trị và dấu hiệu nghi ngờ ở từng thời điểm.\n5. Khi có nhãn, so sánh kết quả gốc/sau lọc trong tab Đánh giá rồi xuất CSV/JSON.")
+    st.markdown("1. Chọn bộ kiểm thử hoặc tải CSV năm chỉ số.\n2. Kiểm tra thời gian, đơn vị, nhãn 1/-1 và phần đầu dùng làm giai đoạn ổn định.\n3. Giữ bốn thuật toán và tỷ lệ train 70%, bấm Chạy phát hiện.\n4. Xem trạng thái, biểu đồ, giá trị và dấu hiệu nghi ngờ ở từng thời điểm.\n5. Khi có nhãn, so sánh kết quả gốc/sau lọc trong tab Đánh giá rồi xuất CSV/JSON.")
     st.caption("Mô hình chỉ học phần đầu, dự đoán phần cuối theo thời gian. Mọi lần thay dữ liệu hoặc cấu hình đều cần chạy lại. Không có nhãn thì không có chỉ số đánh giá.")
     st.markdown("**MAD:** lệch khỏi trung vị train. **Isolation Forest:** điểm dễ tách bởi cây. **LOF:** mật độ thấp hơn lân cận. **One-Class SVM:** ngoài vùng dữ liệu đã học. Bộ lọc vận hành yêu cầu thêm độ lệch chỉ số đủ lớn so với biến động train và dung sai demo; có thể tắt để nghiên cứu dự đoán gốc.")
-    st.caption("Xem docs/DEMO_MYSQL.md để demo đầy đủ; docs/MYSQL_SETUP.md để tạo tài khoản và hiểu chính xác số liệu thu thập.")
 
 
 def render_dbms_dashboard(project: Path, dark: bool, show_table, show_confusion) -> None:
     content, source_name = None, ""
+    source_kind = "upload"
     with st.container(border=True):
-        st.subheader("1. Chọn dữ liệu hoạt động MySQL")
-        source = st.radio("Nguồn dữ liệu MySQL", ["Dữ liệu kiểm thử MySQL", "Tải CSV MySQL", "Kết nối MySQL"], horizontal=True, key="dbms_source")
-        if source == "Dữ liệu kiểm thử MySQL":
+        st.subheader("1. Chọn dữ liệu hoạt động CSDL")
+        st.caption("Phân tích một tệp theo từng lần chạy: chọn nguồn, kiểm tra dữ liệu, đặt cấu hình ở thanh bên rồi chạy phát hiện.")
+        source_options = ["Dữ liệu kiểm thử", "Tải CSV"]
+        previous_sources = {"Dữ liệu kiểm thử MySQL": "Dữ liệu kiểm thử", "Tải CSV MySQL": "Tải CSV"}
+        if st.session_state.get("dbms_source") in previous_sources:
+            st.session_state["dbms_source"] = previous_sources[st.session_state["dbms_source"]]
+        if "dbms_source" in st.session_state and st.session_state["dbms_source"] not in source_options:
+            st.session_state["dbms_source"] = source_options[0]
+            _clear_results()
+        source = st.radio("Nguồn dữ liệu", source_options, horizontal=True, key="dbms_source")
+        _source_notice("synthetic" if source == "Dữ liệu kiểm thử" else "upload")
+        if source == "Dữ liệu kiểm thử":
+            source_kind = "synthetic"
             sample = st.selectbox("Bộ dữ liệu kiểm thử", ["Hoạt động bình thường", "Hoạt động bất thường"], key="dbms_sample")
-            path = project / "data" / ("mysql_normal.csv" if sample == "Hoạt động bình thường" else "mysql_anomalous.csv")
+            filename = NORMAL_SAMPLE
+            if sample == "Hoạt động bất thường":
+                scenario = st.selectbox("Kịch bản bất thường", list(ANOMALOUS_SAMPLES), key="dbms_sample_scenario")
+                filename = ANOMALOUS_SAMPLES[scenario]
+            path = project / "data" / filename
             if path.exists():
                 content, source_name = path.read_bytes(), path.name
             else:
-                st.error("Chưa có dữ liệu kiểm thử. Chạy python scripts/generate_mysql_demo.py tại thư mục dự án.")
-            st.caption("Dữ liệu tổng hợp tái lập được, có dao động tự nhiên. Bộ bất thường chèn các đợt tăng QPS, kết nối, độ trễ và sự kiện phối hợp trong phần kiểm tra; nhãn theo kịch bản, không lấy từ mô hình.")
-        elif source == "Tải CSV MySQL":
-            uploaded = st.file_uploader("CSV MySQL (UTF-8, tối đa 10 MiB)", type=["csv"], key="dbms_csv_upload")
+                st.error("Chưa có dữ liệu kiểm thử. Hãy chọn Tải CSV để tiếp tục với dữ liệu của bạn.")
+            st.caption("Mỗi tệp mẫu có 10 dòng để dễ đối chiếu: 7 dòng đầu bình thường dùng để học, 3 dòng cuối để kiểm tra khi giữ tỷ lệ 70%. Hai bộ bất thường lần lượt chèn tăng truy vấn hoặc phản hồi chậm vào phần kiểm tra. Nhãn do người tạo dữ liệu đặt, không lấy từ mô hình.")
+        elif source == "Tải CSV":
+            uploaded = st.file_uploader("Tệp CSV (UTF-8, tối đa 10 MiB)", type=["csv"], key="dbms_csv_upload",
+                help="Cần thời gian và năm chỉ số CSDL. Có thể ánh xạ tên cột sau khi tải tệp; nhãn 1/-1 là tùy chọn.")
             if uploaded is not None:
                 if uploaded.size > 10 * 1024 * 1024:
                     st.error("Tệp vượt quá 10 MiB. Hãy chia nhỏ rồi tải lại.")
                 else:
                     content, source_name = uploaded.getvalue(), uploaded.name
-        else:
-            content, source_name = _mysql_source()
+            else:
+                st.info("Chọn tệp CSV để xem trước và cấu hình phân tích. Mở Cấu trúc CSV năm chỉ số bên dưới nếu cần kiểm tra định dạng.")
         with st.expander("Cấu trúc CSV năm chỉ số"):
             st.code("timestamp,queries_per_second,connections,response_time_ms,slow_queries,connection_errors,is_anomaly\n2026-01-01T00:00:00Z,50,20,8.2,0,0,1\n2026-01-01T00:01:00Z,51,21,8.4,0,0,1", language="csv")
             st.caption("Ví dụ chỉ minh họa định dạng. Nhãn tùy chọn: 1 bình thường, -1 bất thường. Cả năm chỉ số phải là số hữu hạn không âm; mỗi dòng có thời gian hợp lệ, duy nhất. QPS là tốc độ; slow_queries và connection_errors là số phát sinh trong khoảng, không phải bộ đếm tích lũy. Giữ khoảng lấy mẫu nhất quán.")
@@ -266,9 +253,9 @@ def render_dbms_dashboard(project: Path, dark: bool, show_table, show_confusion)
     try:
         frame = read_csv_frame(BytesIO(content))
         missing = [metric for metric in METRICS if metric not in frame]
-        if source == "Tải CSV MySQL":
+        if source == "Tải CSV":
             with st.expander("Cấu hình cột thời gian và cột đặc trưng", expanded=bool(missing)):
-                manual = st.checkbox("Ánh xạ tên cột nguồn sang các chỉ số MySQL", value=False, key="dbms_manual_columns")
+                manual = st.checkbox("Ánh xạ tên cột nguồn sang các chỉ số", value=False, key="dbms_manual_columns")
                 if manual:
                     available = ["Chưa chọn", *list(frame.columns)]
                     mapping = {}
@@ -292,9 +279,10 @@ def render_dbms_dashboard(project: Path, dark: bool, show_table, show_confusion)
                     st.caption("Chỉ đổi tên cột cho lần phân tích này. Giá trị đo và tệp gốc được giữ nguyên.")
         if missing:
             st.error("CSV thiếu chỉ số bắt buộc: " + ", ".join(missing))
+            st.caption("Nếu tệp dùng tên cột khác, bật Ánh xạ tên cột nguồn sang các chỉ số ở trên và chọn đủ năm chỉ số cùng cột thời gian.")
             return
         with st.sidebar:
-            time_col = st.selectbox("Cột thời gian MySQL", list(frame.columns), index=list(frame.columns).index("timestamp") if "timestamp" in frame else 0, key="dbms_timestamp")
+            time_col = st.selectbox("Cột thời gian", list(frame.columns), index=list(frame.columns).index("timestamp") if "timestamp" in frame else 0, key="dbms_timestamp")
             # Keep opting out distinct from an unset widget on later reruns.
             label_columns = [column for column in frame if column not in METRICS and column != time_col]
             default_label = next((column for column in ("is_anomaly", "label") if column in label_columns), None)
@@ -306,10 +294,10 @@ def render_dbms_dashboard(project: Path, dark: bool, show_table, show_confusion)
                 index=labels.index(default_label) if default_label else 0,
                 format_func=lambda value: "Không dùng nhãn" if value == no_label else value, key="dbms_label")
             label_col = None if selected_label == no_label else selected_label
-            names = st.multiselect("Thuật toán MySQL", list(MODELS), default=list(MODELS), format_func=MODELS.get, key="dbms_models",
+            names = st.multiselect("Thuật toán", list(MODELS), default=list(MODELS), format_func=MODELS.get, key="dbms_models",
                 help="MAD: lệch khỏi trung vị. Isolation Forest: điểm dễ tách riêng bằng cây. LOF: mật độ thấp hơn lân cận. One-Class SVM: ngoài vùng hoạt động đã học.")
-            fraction = st.slider("Dữ liệu huấn luyện MySQL (%)", 50, 90, 70, 5, key="dbms_train_fraction") / 100
-            contamination = st.slider("Tỷ lệ bất thường dự kiến MySQL (%)", 0.1, 10.0, 1.0, 0.1, key="dbms_contamination") / 100
+            fraction = st.slider("Dữ liệu huấn luyện (%)", 50, 90, 70, 5, key="dbms_train_fraction") / 100
+            contamination = st.slider("Tỷ lệ bất thường dự kiến (%)", 0.1, 10.0, 1.0, 0.1, key="dbms_contamination") / 100
             with st.expander("Ngưỡng cảnh báo vận hành"):
                 noise_guard = st.checkbox("Lọc dao động nhỏ theo thống kê và dung sai", value=True, key="dbms_noise_guard")
                 threshold = st.slider("Ngưỡng độ lệch thống kê", 1.0, 10.0, 3.5, 0.5, key="dbms_deviation_threshold")
@@ -318,7 +306,7 @@ def render_dbms_dashboard(project: Path, dark: bool, show_table, show_confusion)
         config = dict(timestamp_col=time_col, value_col="queries_per_second", label_col=label_col,
                       model_names=names, train_fraction=fraction, contamination=contamination,
                       analysis_mode="dbms", noise_guard=noise_guard, deviation_threshold=threshold)
-        signature = sha256(content + json.dumps({"source": source_name, "backend": get_backend_url(), **config}, sort_keys=True).encode()).hexdigest()
+        signature = sha256(content + json.dumps({"source": source_name, "source_kind": source_kind, "backend": get_backend_url(), **config}, sort_keys=True).encode()).hexdigest()
         split = int(Decimal(len(frame)) * Decimal(str(fraction)))
         st.caption(f"{source_name} · {len(frame)} dòng · {split} dòng đầu huấn luyện, {len(frame)-split} dòng cuối kiểm tra sau sắp xếp thời gian.")
         if len(frame) < 100:
@@ -329,15 +317,19 @@ def render_dbms_dashboard(project: Path, dark: bool, show_table, show_confusion)
         ready = bool(names) and split >= 3 and split < len(frame)
         if not ready:
             st.warning("Chọn ít nhất một thuật toán và cung cấp tối thiểu 3 dòng train, 1 dòng test.")
+        else:
+            st.markdown('<div class="workflow-note"><strong>2. Kiểm tra cấu hình và chạy</strong><p>Cấu hình nằm ở thanh bên. Phần đầu dùng để học mức nền; phần cuối được kiểm tra. Bấm <b>Chạy phát hiện</b> khi dữ liệu và cấu hình đã phù hợp.</p></div>', unsafe_allow_html=True)
         if st.button("Chạy phát hiện", type="primary", key="dbms_run", disabled=not ready, width="stretch"):
             _clear_results()
             try:
-                with st.spinner("Đang phân tích năm chỉ số MySQL trên FastAPI..."):
+                with st.spinner("Đang học mức nền và kiểm tra năm chỉ số. Vui lòng chờ kết quả..."):
                     run = detect_via_api(content, source_name, **config)
+                run.metadata["source_kind"] = source_kind
                 st.session_state["dbms_result"] = run
                 st.session_state["dbms_result_signature"] = signature
             except BackendError as exc:
                 st.error(str(exc))
+                st.caption("Kiểm tra thông báo trên, giữ ứng dụng đang chạy rồi bấm Chạy phát hiện để thử lại.")
         if ready and st.session_state.get("dbms_result_signature") == signature:
             _results(st.session_state["dbms_result"], source_name, dark, show_table, show_confusion)
         else:
@@ -346,3 +338,4 @@ def render_dbms_dashboard(project: Path, dark: bool, show_table, show_confusion)
             _help()
     except (ValueError, TypeError, pd.errors.ParserError, UnicodeDecodeError):
         st.error("Không đọc được CSV. Kiểm tra UTF-8, dấu phẩy phân cách, tiêu đề duy nhất và các dòng dữ liệu.")
+        st.caption("Lưu tệp đã sửa rồi tải lên lần nữa. Mở Cấu trúc CSV năm chỉ số để đối chiếu tên cột và đơn vị.")

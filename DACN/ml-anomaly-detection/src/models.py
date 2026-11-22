@@ -152,8 +152,11 @@ def fit_models(
     """
     _validate_contamination(contamination)
     train, test = _validate_pair(train_features, test_features)
-    names = list(MODEL_NAMES if model_names is None else [model_names] if isinstance(model_names, str) else model_names)
-    if not names or len(set(names)) != len(names) or any(name not in MODEL_NAMES for name in names):
+    try:
+        names = list(MODEL_NAMES if model_names is None else [model_names] if isinstance(model_names, str) else model_names)
+    except TypeError as exc:
+        raise ValueError(f"model_names must be a non-empty unique selection from {MODEL_NAMES}") from exc
+    if not names or any(not isinstance(name, str) or name not in MODEL_NAMES for name in names) or len(set(names)) != len(names):
         raise ValueError(f"model_names must be a non-empty unique selection from {MODEL_NAMES}")
     scaler = StandardScaler()
     scaled_train = scaler.fit_transform(train)
@@ -250,6 +253,8 @@ def build_feature_matrix(
     Calendar features are opt-in because dataset-specific anomalies can otherwise
     be confused with calendar boundaries. No labels may be selected as metrics.
     """
+    if not isinstance(include_time, (bool, np.bool_)):
+        raise ValueError("include_time must be a boolean")
     columns = [value_col] if isinstance(value_col, str) else list(value_col)
     if not columns or len(set(columns)) != len(columns):
         raise ValueError("Select at least one unique metric column")
@@ -258,6 +263,9 @@ def build_feature_matrix(
     missing = [column for column in columns if column not in frame.columns]
     if missing:
         raise ValueError(f"Missing metric columns: {', '.join(missing)}")
+    for column in columns:
+        if frame[column].map(lambda value: isinstance(value, (bool, np.bool_, complex, np.complexfloating))).any():
+            raise ValueError("Selected metrics must contain real numeric values, not booleans or complex numbers")
     try:
         result = frame[columns].astype(float).copy()
     except (TypeError, ValueError) as exc:

@@ -22,6 +22,7 @@ from src.contracts import DetectionRun
 
 DEFAULT_API_URL = "http://127.0.0.1:8000"
 REQUEST_TIMEOUT = httpx.Timeout(120.0, connect=3.0, write=30.0, pool=5.0)
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MODEL_NAMES = ("mad", "isolation_forest", "lof", "one_class_svm")
 
 
@@ -31,6 +32,34 @@ class BackendError(Exception):
 
 def get_backend_url() -> str:
     return os.environ.get("ANOMALY_API_URL", DEFAULT_API_URL).strip().rstrip("/")
+
+
+def _validated_backend_url() -> str:
+    base_url = get_backend_url()
+    try:
+        address = urlsplit(base_url)
+        if (address.scheme not in {"http", "https"} or not address.hostname
+                or address.username or address.password or address.query or address.fragment
+                or address.port == 0):
+            raise ValueError("Invalid backend URL")
+    except ValueError as exc:
+        raise BackendError("Địa chỉ BE chưa hợp lệ. Hãy kiểm tra cấu hình ANOMALY_API_URL.") from exc
+    return base_url
+
+
+def _validate_upload(content: bytes) -> None:
+    if not isinstance(content, bytes) or not content:
+        raise BackendError("Tệp CSV chưa có dữ liệu. Hãy chọn lại tệp rồi thử lại.")
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise BackendError("Mỗi tệp CSV phải nhỏ hơn hoặc bằng 10 MiB. Hãy chia tệp nhỏ hơn rồi thử lại.")
+
+
+def _reject_boolean_values(values: pd.Series) -> None:
+    # Python booleans compare equal to 0/1; numeric coercion would hide a broken
+    # backend contract before label, prediction, observation, and score checks.
+    if (pd.api.types.is_bool_dtype(values.dtype)
+            or (values.dtype == object and values.map(lambda value: isinstance(value, (bool, np.bool_))).any())):
+        raise ValueError("Boolean values cannot replace numeric observations, labels, or scores")
 
 
 def _read_result(payload: dict, names: list[str], timestamp_col: str,
@@ -58,15 +87,18 @@ def _read_result(payload: dict, names: list[str], timestamp_col: str,
     for data in (frame, predictions):
         if not all(column in data for column in columns):
             raise ValueError("Missing observation columns")
+        _reject_boolean_values(data[value_col])
         data[timestamp_col] = pd.to_datetime(data[timestamp_col], errors="raise", utc=True).dt.tz_convert(None)
         data[value_col] = pd.to_numeric(data[value_col], errors="raise")
         if data[timestamp_col].isna().any() or not np.isfinite(data[value_col]).all():
             raise ValueError("Invalid observations")
         for column in metadata.get("metric_cols", []):
+            _reject_boolean_values(data[column])
             data[column] = pd.to_numeric(data[column], errors="raise")
             if not np.isfinite(data[column]).all() or data[column].lt(0).any():
                 raise ValueError("Invalid DBMS observations")
         if label_col:
+            _reject_boolean_values(data[label_col])
             if not data[label_col].isin([-1, 1]).all():
                 raise ValueError("Invalid ground-truth labels")
             data[label_col] = data[label_col].astype(int)
@@ -79,9 +111,11 @@ def _read_result(payload: dict, names: list[str], timestamp_col: str,
         raise ValueError("Predictions do not match the chronological test observations")
     for name in names:
         prediction_col, score_col = f"{name}_prediction", f"{name}_score"
+        _reject_boolean_values(predictions[prediction_col])
         if not predictions[prediction_col].isin([-1, 1]).all():
             raise ValueError("Invalid predictions")
         predictions[prediction_col] = predictions[prediction_col].astype(int)
+        _reject_boolean_values(predictions[score_col])
         predictions[score_col] = pd.to_numeric(predictions[score_col], errors="raise")
         if not np.isfinite(predictions[score_col]).all():
             raise ValueError("Invalid decision scores")
@@ -196,8 +230,12 @@ def _validate_dbms_result(result: DetectionRun, noise_guard: bool, threshold: fl
         raise ValueError("Missing DBMS evidence")
     for metric in expected:
         for suffix in ("_deviation", "_deviation_score"):
+            _reject_boolean_values(data[metric + suffix])
             if not np.isfinite(pd.to_numeric(data[metric + suffix], errors="raise")).all():
                 raise ValueError("Invalid DBMS deviations")
+    _reject_boolean_values(data["max_deviation_score"])
+    if not np.isfinite(pd.to_numeric(data["max_deviation_score"], errors="raise")).all():
+        raise ValueError("Invalid maximum DBMS deviation score")
     names = metadata["model_names"]
     labeled = bool(metadata.get("label_col"))
     for key in ("raw_metrics", "confusion_matrices", "raw_confusion_matrices"):
@@ -206,6 +244,7 @@ def _validate_dbms_result(result: DetectionRun, noise_guard: bool, threshold: fl
             raise ValueError("DBMS evaluation scope disagrees with selected labels")
     for name in metadata["model_names"]:
         raw = data[f"{name}_raw_prediction"]
+        _reject_boolean_values(raw)
         if not raw.isin([-1, 1]).all():
             raise ValueError("Invalid raw model predictions")
         alert = raw.eq(-1) & (data["activity_deviation"] if noise_guard else True)
@@ -247,14 +286,8 @@ def detect_via_api(content: bytes, source_name: str, *, timestamp_col: str = "ti
                    analysis_mode: str = "chronological", split_index: int | None = None,
                    noise_guard: bool = True, deviation_threshold: float = 3.5) -> DetectionRun:
     """Upload CSV and configuration; all model fitting takes place in FastAPI."""
-    base_url = get_backend_url()
-    try:
-        address = urlsplit(base_url)
-        if (address.scheme not in {"http", "https"} or not address.hostname
-                or address.username or address.password or address.query or address.fragment):
-            raise ValueError("Invalid backend URL")
-    except ValueError as exc:
-        raise BackendError("Địa chỉ BE chưa hợp lệ. Hãy kiểm tra cấu hình ANOMALY_API_URL.") from exc
+    base_url = _validated_backend_url()
+    _validate_upload(content)
     names = list(MODEL_NAMES if model_names is None else [model_names] if isinstance(model_names, str) else model_names)
     if value_col is None:
         value_col = "queries_per_second" if analysis_mode == "dbms" else "value"
@@ -316,19 +349,9 @@ def compare_via_api(normal_content: bytes, anomalous_content: bytes,
                     split_index: int | None = None, noise_guard: bool = True,
                     deviation_threshold: float = 3.5) -> dict[str, DetectionRun]:
     """Upload a pair and validate one shared-reference fit; never fit locally."""
-    base_url = get_backend_url()
-    try:
-        address = urlsplit(base_url)
-        if (address.scheme not in {"http", "https"} or not address.hostname
-                or address.username or address.password or address.query or address.fragment):
-            raise ValueError("Invalid backend URL")
-    except ValueError as exc:
-        raise BackendError("Địa chỉ BE chưa hợp lệ. Hãy kiểm tra cấu hình ANOMALY_API_URL.") from exc
+    base_url = _validated_backend_url()
     for content in (normal_content, anomalous_content):
-        if not isinstance(content, bytes) or not content:
-            raise BackendError("Cần hai tệp CSV có dữ liệu để so sánh. Hãy chọn lại dữ liệu rồi thử lại.")
-        if len(content) > 10 * 1024 * 1024:
-            raise BackendError("Mỗi tệp CSV so sánh phải nhỏ hơn hoặc bằng 10 MiB. Hãy chia tệp nhỏ hơn rồi thử lại.")
+        _validate_upload(content)
     names = list(MODEL_NAMES if model_names is None else [model_names] if isinstance(model_names, str) else model_names)
     params = {
         "timestamp_col": timestamp_col, "value_col": value_col,

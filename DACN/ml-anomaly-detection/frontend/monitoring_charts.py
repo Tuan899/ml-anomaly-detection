@@ -12,15 +12,16 @@ def _layout(figure, dark=False, height=320):
     background = "#111c2e" if dark else "#ffffff"
     grid = "#2e405c" if dark else "#e6edf5"
     figure.update_layout(
-        template="plotly_dark" if dark else "plotly_white", height=height,
-        font={"family": "Arial, sans-serif", "size": 13, "color": ink},
+        template="plotly_dark" if dark else "plotly_white", height=height, autosize=True,
+        font={"family": "Segoe UI, Arial, sans-serif", "size": 13, "color": ink},
         paper_bgcolor=background, plot_bgcolor=background,
-        hoverlabel={"bgcolor": background, "font": {"color": ink}},
-        legend={"orientation": "h", "x": 0, "y": 1.22, "font": {"color": ink}},
-        margin={"l": 60, "r": 20, "t": 65, "b": 50}, hovermode="closest",
+        hoverlabel={"bgcolor": background, "font": {"color": ink}, "align": "left"},
+        legend={"orientation": "h", "x": 0, "y": 1.22, "font": {"color": ink, "size": 12},
+                "yanchor": "bottom"},
+        margin={"l": 52, "r": 12, "t": 100, "b": 54}, hovermode="closest", dragmode="pan",
     )
-    figure.update_xaxes(gridcolor=grid, tickfont={"color": ink}, title_font={"color": ink}, automargin=True)
-    figure.update_yaxes(gridcolor=grid, tickfont={"color": ink}, title_font={"color": ink}, automargin=True)
+    figure.update_xaxes(showgrid=False, zeroline=False, tickfont={"color": ink}, title_font={"color": ink}, automargin=True)
+    figure.update_yaxes(gridcolor=grid, zeroline=False, tickfont={"color": ink}, title_font={"color": ink}, automargin=True)
     return figure
 
 
@@ -36,7 +37,7 @@ def build_score_figure(run, model: str, dark: bool = False) -> go.Figure:
                       np.where(raw, "Mô hình đánh dấu, chưa thành cảnh báo vận hành", "Không có cảnh báo"))
     figure = go.Figure(go.Scatter(
         x=data[time], y=score, customdata=labels, mode="lines", name=f"Điểm {MODEL_NAMES.get(model, model)}",
-        line={"color": "#818cf8" if dark else "#4f46e5", "width": 2},
+        line={"color": "#60a5fa" if dark else "#2563eb", "width": 2}, connectgaps=False,
         hovertemplate="%{x|%d/%m/%Y %H:%M:%S} UTC<br>Điểm: %{y:.5g}<br>%{customdata}<extra></extra>",
     ))
     figure.add_trace(go.Scatter(
@@ -52,8 +53,8 @@ def build_score_figure(run, model: str, dark: bool = False) -> go.Figure:
     figure.add_hline(y=0, line_dash="dash", line_color="#64748b", annotation_text="Mốc quyết định mô hình: 0",
                      annotation_font_color="#cbd5e1" if dark else "#475569")
     figure.update_xaxes(title_text="Thời gian (UTC)", tickformat="%H:%M\n%d/%m", nticks=6)
-    figure.update_yaxes(title_text="Điểm bất thường (âm điểm quyết định)")
-    return _layout(figure, dark)
+    figure.update_yaxes(title_text="Điểm bất thường · cao hơn = đáng chú ý hơn")
+    return _layout(figure, dark, height=370)
 
 
 def build_count_figure(run, dark: bool = False) -> go.Figure:
@@ -61,25 +62,26 @@ def build_count_figure(run, dark: bool = False) -> go.Figure:
     count = int(alert_mask(run).sum())
     figure = go.Figure(go.Bar(
         x=["Không có cảnh báo", "Có cảnh báo"], y=[len(run.predictions) - count, count],
-        marker_color=["#16a34a", "#dc2626"], text=[len(run.predictions) - count, count],
+        marker_color=["#64748b", "#dc2626"], text=[len(run.predictions) - count, count],
         textposition="auto", hovertemplate="%{x}<br>%{y} bản ghi<extra></extra>",
     ))
     figure.update_yaxes(title_text="Số bản ghi kiểm tra", rangemode="tozero", dtick=1 if len(run.predictions) < 10 else None)
-    return _layout(figure, dark, height=290)
+    figure.update_layout(showlegend=False)
+    return _layout(figure, dark, height=290).update_layout(margin={"t": 24})
 
 
 def build_comparison_figure(left, right, metric: str, dark: bool = False) -> go.Figure:
     """Show exact holdout measurements from two runs with their own timestamps."""
     if metric not in METRIC_NAMES:
-        raise ValueError("Chỉ số MySQL không được hỗ trợ.")
+        raise ValueError("Chỉ số không được hỗ trợ.")
     figure = go.Figure()
-    for run, title, color in ((left, "Hoạt động bình thường", "#16a34a"),
-                              (right, "Dữ liệu cần kiểm tra", "#4f46e5")):
+    for run, title, color in ((left, "Dữ liệu tham chiếu", "#94a3b8" if dark else "#64748b"),
+                              (right, "Dữ liệu cần đối chiếu", "#60a5fa" if dark else "#2563eb")):
         data, time = run.predictions, run.metadata["timestamp_col"]
         flags = alert_mask(run)
         figure.add_trace(go.Scatter(
-            x=data[time], y=data[metric], mode="lines", name=title,
-            line={"color": color, "width": 2},
+            x=data[time], y=data[metric], mode="lines+markers" if len(data) <= 12 else "lines", name=title,
+            line={"color": color, "width": 2}, marker={"color": color, "size": 5}, connectgaps=False,
             customdata=np.where(flags, "Có cảnh báo", "Không có cảnh báo"),
             hovertemplate=("%{x|%d/%m/%Y %H:%M:%S} UTC<br>" + METRIC_NAMES[metric]
                            + ": %{y}<br>%{customdata}<extra>" + title + "</extra>"),
@@ -92,4 +94,4 @@ def build_comparison_figure(left, right, metric: str, dark: bool = False) -> go.
         ))
     figure.update_xaxes(title_text="Thời gian (UTC)", tickformat="%H:%M\n%d/%m", nticks=6)
     figure.update_yaxes(title_text=METRIC_UNITS[metric], rangemode="nonnegative")
-    return _layout(figure, dark, height=360)
+    return _layout(figure, dark, height=420)

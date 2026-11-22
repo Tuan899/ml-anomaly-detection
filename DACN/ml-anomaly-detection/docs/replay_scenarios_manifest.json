@@ -1,0 +1,39 @@
+{
+  "provenance": "Fixed synthetic scenarios, not observed server measurements.",
+  "generator": "scripts/generate_replay_scenarios.py",
+  "sampling_interval_seconds": 1,
+  "training": "baseline_K1.csv only; replay files have disjoint, later source timestamps.",
+  "labels": {
+    "1": "generated normal observation",
+    "-1": "predefined injected incident"
+  },
+  "incident_policy": "K2–K4 replace indices [rows//3, rows//2), independent of estimators.",
+  "fault_injection": "Changes simulated measurements only; no workload SQL is executed.",
+  "files": {
+    "baseline_K1.csv": {
+      "rows": 300,
+      "injected_anomalies": 0,
+      "sha256": "3dd2a3345bfa9af844ca733d0c99a4ab7350fa312154adde91dcaf4a9cf36d40"
+    },
+    "K1.csv": {
+      "rows": 180,
+      "injected_anomalies": 0,
+      "sha256": "7ee0269499599af0d8720b660e6dbcac48717c4801d3b500ac95608b6861b3c9"
+    },
+    "K2.csv": {
+      "rows": 180,
+      "injected_anomalies": 30,
+      "sha256": "6439263026a268011507798d9b311138318e55fe24529e783666d3937c9089d3"
+    },
+    "K3.csv": {
+      "rows": 180,
+      "injected_anomalies": 30,
+      "sha256": "3d9883e165b4a0f6bc06d67587f8a71b0017dd1db92e51faa1b68005f8d59e3d"
+    },
+    "K4.csv": {
+      "rows": 180,
+      "injected_anomalies": 30,
+      "sha256": "2aa8236ba749515f9f6958bbb1aff702881eaf2ee826d85311a2ea00dccfebc2"
+    }
+  }
+}

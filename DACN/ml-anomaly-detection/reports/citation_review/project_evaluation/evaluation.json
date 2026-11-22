@@ -1,0 +1,2241 @@
+{
+  "generated_at_utc": "2026-11-14T06:47:55.465215+00:00",
+  "environment": {
+    "python": "3.10.9",
+    "numpy": "2.1.3",
+    "pandas": "2.2.3",
+    "scikit_learn": "1.6.1"
+  },
+  "data_manifest": "docs/mysql_datasets_manifest.json",
+  "protocol": "Each dataset uses the same unchanged first 70% normal training samples, chronological held-out prediction, deterministic algorithms and train-only normalization. Labels/scenarios are evaluation context only.",
+  "limitations": "Computed on deliberately synthetic fixtures; does not establish effectiveness on real MySQL workloads. No positive labels in the normal dataset: recall/F1 there are zero by convention.",
+  "datasets": {
+    "mysql_normal.csv": {
+      "sha256": "210f4cd42987a4cda6fd4b8c95d7b2511f8cffa28dfca693824e0249ebc33492",
+      "metadata": {
+        "analysis_mode": "dbms",
+        "rows": 1440,
+        "train_rows": 1008,
+        "test_rows": 432,
+        "split_index": 1008,
+        "train_fraction": 0.7,
+        "timestamp_col": "timestamp",
+        "value_col": "queries_per_second",
+        "label_col": "label",
+        "model_names": [
+          "mad",
+          "isolation_forest",
+          "lof",
+          "one_class_svm"
+        ],
+        "metric_cols": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "features": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "contamination": 0.01,
+        "random_state": 42,
+        "warnings": [
+          "Suspected indicators describe observed deviations from the training baseline; they do not establish root cause.",
+          "Tolerance floors are explicit demonstration defaults, not calibrated MySQL capacity limits or an SLA.",
+          "Operational alerts require both a raw model anomaly and a metric deviation. This may suppress subtle multivariate anomalies; compare raw predictions and metrics as well.",
+          "Test labels contain no anomalies: recall/F1 cannot support a detection-quality conclusion; inspect false positives."
+        ],
+        "cleaning": {
+          "input_rows": 1440,
+          "output_rows": 1440,
+          "dropped_rows": 0,
+          "reason": "strict validation; no rows dropped"
+        },
+        "train_baselines": {
+          "queries_per_second": {
+            "median": 50.0685,
+            "mad": 3.91,
+            "robust_sigma": 5.828206078576726,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 20.39872127501854,
+            "lower_bound": 29.66977872498146,
+            "upper_bound": 70.46722127501855
+          },
+          "connections": {
+            "median": 30.0,
+            "mad": 3.0,
+            "robust_sigma": 4.4478,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 15.5673,
+            "lower_bound": 14.4327,
+            "upper_bound": 45.5673
+          },
+          "response_time_ms": {
+            "median": 15.036999999999999,
+            "mad": 1.2859999999999987,
+            "robust_sigma": 1.9243884358784287,
+            "minimum_absolute_tolerance": 5.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 6.7353595255745,
+            "lower_bound": 8.301640474425499,
+            "upper_bound": 21.7723595255745
+          },
+          "slow_queries": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 1.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 1.0,
+            "lower_bound": 0.0,
+            "upper_bound": 1.0
+          },
+          "connection_errors": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 0.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 0.0,
+            "lower_bound": 0.0,
+            "upper_bound": 0.0
+          }
+        },
+        "parameters": {
+          "mad": {
+            "threshold": 3.5,
+            "center": [
+              -0.0028465762249538893,
+              -0.024072134182577268,
+              -0.009459385496584469,
+              -0.40824829046386296,
+              0.0
+            ],
+            "mad_scale": [
+              0.8748560467788424,
+              0.9332581252322244,
+              0.8229036914701588,
+              1e-12,
+              1e-12
+            ],
+            "aggregation": "maximum absolute robust z-score over selected features",
+            "zero_mad": "train-only epsilon tolerance; no test-statistic fallback",
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "isolation_forest": {
+            "bootstrap": false,
+            "contamination": 0.01,
+            "max_features": 1.0,
+            "max_samples": "auto",
+            "n_estimators": 100,
+            "n_jobs": null,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "lof": {
+            "algorithm": "auto",
+            "contamination": 0.01,
+            "leaf_size": 30,
+            "metric": "minkowski",
+            "metric_params": null,
+            "n_jobs": null,
+            "n_neighbors": 20,
+            "novelty": true,
+            "p": 2,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "one_class_svm": {
+            "cache_size": 200,
+            "coef0": 0.0,
+            "degree": 3,
+            "gamma": "scale",
+            "kernel": "rbf",
+            "max_iter": -1,
+            "nu": 0.01,
+            "shrinking": true,
+            "tol": 0.001,
+            "verbose": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          }
+        },
+        "timings": {
+          "mad": {
+            "train_seconds": 0.0017951999907381833,
+            "predict_seconds": 0.00011739999172277749
+          },
+          "isolation_forest": {
+            "train_seconds": 0.10873569999239407,
+            "predict_seconds": 0.013567400019383058
+          },
+          "lof": {
+            "train_seconds": 0.00931769999442622,
+            "predict_seconds": 0.005395000014686957
+          },
+          "one_class_svm": {
+            "train_seconds": 0.0024921000003814697,
+            "predict_seconds": 0.0020924000127706677
+          }
+        },
+        "noise_guard": {
+          "enabled": true,
+          "deviation_threshold": 3.5,
+          "minimum_absolute_tolerances": {
+            "queries_per_second": 2.0,
+            "connections": 2.0,
+            "response_time_ms": 5.0,
+            "slow_queries": 1.0,
+            "connection_errors": 0.0
+          },
+          "relative_tolerance": 0.05,
+          "description": "alert = raw anomaly AND any absolute metric deviation > max(threshold * max(1.4826*MAD, IQR/1.349), absolute floor, 5% of train median); training statistics only",
+          "score_policy": "Model decision scores are unchanged raw margins; larger means more normal. Indicator deviation scores are policy-scaled deviations, not robust z-scores.",
+          "score_definition": "signed deviation / (allowed_deviation / threshold); when allowed_deviation is zero, signed deviation * threshold using one event as the count resolution",
+          "zero_tolerance_score": {
+            "count_resolution": 1.0,
+            "one_event_score": 3.5,
+            "gate": "abs(deviation) > 0 remains independent of the reporting score"
+          }
+        },
+        "anomaly_counts": {
+          "mad": 0,
+          "isolation_forest": 0,
+          "lof": 0,
+          "one_class_svm": 0
+        },
+        "raw_anomaly_counts": {
+          "mad": 48,
+          "isolation_forest": 11,
+          "lof": 5,
+          "one_class_svm": 8
+        },
+        "raw_metrics": {
+          "mad": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "isolation_forest": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "lof": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "one_class_svm": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        },
+        "confusion_matrices": {
+          "mad": [
+            [
+              432,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "isolation_forest": [
+            [
+              432,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "lof": [
+            [
+              432,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "one_class_svm": [
+            [
+              432,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        },
+        "raw_confusion_matrices": {
+          "mad": [
+            [
+              384,
+              48
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "isolation_forest": [
+            [
+              421,
+              11
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "lof": [
+            [
+              427,
+              5
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "one_class_svm": [
+            [
+              424,
+              8
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        },
+        "confusion_matrix_order": {
+          "rows": [
+            "normal",
+            "anomaly"
+          ],
+          "columns": [
+            "normal",
+            "anomaly"
+          ],
+          "layout": [
+            [
+              "TN",
+              "FP"
+            ],
+            [
+              "FN",
+              "TP"
+            ]
+          ]
+        },
+        "label_policy": "explicit held-out point labels (-1 anomaly, 1 normal)",
+        "scope": "Chronological multivariate analysis of MySQL activity samples from CSV or a read-only collector; held-out predictions only.",
+        "source_kind": "synthetic",
+        "source_name": "mysql_normal.csv"
+      },
+      "metrics": {
+        "mad": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "isolation_forest": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "lof": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "one_class_svm": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        }
+      },
+      "operational_summary": {
+        "rows_analyzed": 432,
+        "raw_count": 53,
+        "alert_count": 0,
+        "alert_rate": 0.0,
+        "status": "Bình thường",
+        "status_level": "normal"
+      }
+    },
+    "mysql_query_spike.csv": {
+      "sha256": "fa02cdc206162e397a2b70505cef74c886e165bf55d3080cf2bec6bf5c83e679",
+      "metadata": {
+        "analysis_mode": "dbms",
+        "rows": 1440,
+        "train_rows": 1008,
+        "test_rows": 432,
+        "split_index": 1008,
+        "train_fraction": 0.7,
+        "timestamp_col": "timestamp",
+        "value_col": "queries_per_second",
+        "label_col": "label",
+        "model_names": [
+          "mad",
+          "isolation_forest",
+          "lof",
+          "one_class_svm"
+        ],
+        "metric_cols": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "features": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "contamination": 0.01,
+        "random_state": 42,
+        "warnings": [
+          "Suspected indicators describe observed deviations from the training baseline; they do not establish root cause.",
+          "Tolerance floors are explicit demonstration defaults, not calibrated MySQL capacity limits or an SLA.",
+          "Operational alerts require both a raw model anomaly and a metric deviation. This may suppress subtle multivariate anomalies; compare raw predictions and metrics as well."
+        ],
+        "cleaning": {
+          "input_rows": 1440,
+          "output_rows": 1440,
+          "dropped_rows": 0,
+          "reason": "strict validation; no rows dropped"
+        },
+        "train_baselines": {
+          "queries_per_second": {
+            "median": 50.0685,
+            "mad": 3.91,
+            "robust_sigma": 5.828206078576726,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 20.39872127501854,
+            "lower_bound": 29.66977872498146,
+            "upper_bound": 70.46722127501855
+          },
+          "connections": {
+            "median": 30.0,
+            "mad": 3.0,
+            "robust_sigma": 4.4478,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 15.5673,
+            "lower_bound": 14.4327,
+            "upper_bound": 45.5673
+          },
+          "response_time_ms": {
+            "median": 15.036999999999999,
+            "mad": 1.2859999999999987,
+            "robust_sigma": 1.9243884358784287,
+            "minimum_absolute_tolerance": 5.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 6.7353595255745,
+            "lower_bound": 8.301640474425499,
+            "upper_bound": 21.7723595255745
+          },
+          "slow_queries": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 1.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 1.0,
+            "lower_bound": 0.0,
+            "upper_bound": 1.0
+          },
+          "connection_errors": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 0.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 0.0,
+            "lower_bound": 0.0,
+            "upper_bound": 0.0
+          }
+        },
+        "parameters": {
+          "mad": {
+            "threshold": 3.5,
+            "center": [
+              -0.0028465762249538893,
+              -0.024072134182577268,
+              -0.009459385496584469,
+              -0.40824829046386296,
+              0.0
+            ],
+            "mad_scale": [
+              0.8748560467788424,
+              0.9332581252322244,
+              0.8229036914701588,
+              1e-12,
+              1e-12
+            ],
+            "aggregation": "maximum absolute robust z-score over selected features",
+            "zero_mad": "train-only epsilon tolerance; no test-statistic fallback",
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "isolation_forest": {
+            "bootstrap": false,
+            "contamination": 0.01,
+            "max_features": 1.0,
+            "max_samples": "auto",
+            "n_estimators": 100,
+            "n_jobs": null,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "lof": {
+            "algorithm": "auto",
+            "contamination": 0.01,
+            "leaf_size": 30,
+            "metric": "minkowski",
+            "metric_params": null,
+            "n_jobs": null,
+            "n_neighbors": 20,
+            "novelty": true,
+            "p": 2,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "one_class_svm": {
+            "cache_size": 200,
+            "coef0": 0.0,
+            "degree": 3,
+            "gamma": "scale",
+            "kernel": "rbf",
+            "max_iter": -1,
+            "nu": 0.01,
+            "shrinking": true,
+            "tol": 0.001,
+            "verbose": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          }
+        },
+        "timings": {
+          "mad": {
+            "train_seconds": 0.0002248000237159431,
+            "predict_seconds": 7.579999510198832e-05
+          },
+          "isolation_forest": {
+            "train_seconds": 0.1066669000138063,
+            "predict_seconds": 0.012991300027351826
+          },
+          "lof": {
+            "train_seconds": 0.005744800000684336,
+            "predict_seconds": 0.005009699991205707
+          },
+          "one_class_svm": {
+            "train_seconds": 0.00205199999618344,
+            "predict_seconds": 0.0017555000085849315
+          }
+        },
+        "noise_guard": {
+          "enabled": true,
+          "deviation_threshold": 3.5,
+          "minimum_absolute_tolerances": {
+            "queries_per_second": 2.0,
+            "connections": 2.0,
+            "response_time_ms": 5.0,
+            "slow_queries": 1.0,
+            "connection_errors": 0.0
+          },
+          "relative_tolerance": 0.05,
+          "description": "alert = raw anomaly AND any absolute metric deviation > max(threshold * max(1.4826*MAD, IQR/1.349), absolute floor, 5% of train median); training statistics only",
+          "score_policy": "Model decision scores are unchanged raw margins; larger means more normal. Indicator deviation scores are policy-scaled deviations, not robust z-scores.",
+          "score_definition": "signed deviation / (allowed_deviation / threshold); when allowed_deviation is zero, signed deviation * threshold using one event as the count resolution",
+          "zero_tolerance_score": {
+            "count_resolution": 1.0,
+            "one_event_score": 3.5,
+            "gate": "abs(deviation) > 0 remains independent of the reporting score"
+          }
+        },
+        "anomaly_counts": {
+          "mad": 44,
+          "isolation_forest": 0,
+          "lof": 44,
+          "one_class_svm": 44
+        },
+        "raw_anomaly_counts": {
+          "mad": 80,
+          "isolation_forest": 11,
+          "lof": 49,
+          "one_class_svm": 51
+        },
+        "raw_metrics": {
+          "mad": {
+            "precision": 0.55,
+            "recall": 1.0,
+            "f1": 0.7096774193548387
+          },
+          "isolation_forest": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "lof": {
+            "precision": 0.8979591836734694,
+            "recall": 1.0,
+            "f1": 0.946236559139785
+          },
+          "one_class_svm": {
+            "precision": 0.8627450980392157,
+            "recall": 1.0,
+            "f1": 0.9263157894736842
+          }
+        },
+        "confusion_matrices": {
+          "mad": [
+            [
+              388,
+              0
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "isolation_forest": [
+            [
+              388,
+              0
+            ],
+            [
+              44,
+              0
+            ]
+          ],
+          "lof": [
+            [
+              388,
+              0
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "one_class_svm": [
+            [
+              388,
+              0
+            ],
+            [
+              0,
+              44
+            ]
+          ]
+        },
+        "raw_confusion_matrices": {
+          "mad": [
+            [
+              352,
+              36
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "isolation_forest": [
+            [
+              377,
+              11
+            ],
+            [
+              44,
+              0
+            ]
+          ],
+          "lof": [
+            [
+              383,
+              5
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "one_class_svm": [
+            [
+              381,
+              7
+            ],
+            [
+              0,
+              44
+            ]
+          ]
+        },
+        "confusion_matrix_order": {
+          "rows": [
+            "normal",
+            "anomaly"
+          ],
+          "columns": [
+            "normal",
+            "anomaly"
+          ],
+          "layout": [
+            [
+              "TN",
+              "FP"
+            ],
+            [
+              "FN",
+              "TP"
+            ]
+          ]
+        },
+        "label_policy": "explicit held-out point labels (-1 anomaly, 1 normal)",
+        "scope": "Chronological multivariate analysis of MySQL activity samples from CSV or a read-only collector; held-out predictions only.",
+        "source_kind": "synthetic",
+        "source_name": "mysql_query_spike.csv"
+      },
+      "metrics": {
+        "mad": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "isolation_forest": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "lof": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "one_class_svm": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      },
+      "operational_summary": {
+        "rows_analyzed": 432,
+        "raw_count": 85,
+        "alert_count": 44,
+        "alert_rate": 0.10185185185185185,
+        "status": "Cảnh báo cao",
+        "status_level": "high"
+      }
+    },
+    "mysql_connection_spike.csv": {
+      "sha256": "3c9bfd071bb0b5f80b36f1272def76394e47326c6a1302c3a40e741931f041f7",
+      "metadata": {
+        "analysis_mode": "dbms",
+        "rows": 1440,
+        "train_rows": 1008,
+        "test_rows": 432,
+        "split_index": 1008,
+        "train_fraction": 0.7,
+        "timestamp_col": "timestamp",
+        "value_col": "queries_per_second",
+        "label_col": "label",
+        "model_names": [
+          "mad",
+          "isolation_forest",
+          "lof",
+          "one_class_svm"
+        ],
+        "metric_cols": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "features": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "contamination": 0.01,
+        "random_state": 42,
+        "warnings": [
+          "Suspected indicators describe observed deviations from the training baseline; they do not establish root cause.",
+          "Tolerance floors are explicit demonstration defaults, not calibrated MySQL capacity limits or an SLA.",
+          "Operational alerts require both a raw model anomaly and a metric deviation. This may suppress subtle multivariate anomalies; compare raw predictions and metrics as well."
+        ],
+        "cleaning": {
+          "input_rows": 1440,
+          "output_rows": 1440,
+          "dropped_rows": 0,
+          "reason": "strict validation; no rows dropped"
+        },
+        "train_baselines": {
+          "queries_per_second": {
+            "median": 50.0685,
+            "mad": 3.91,
+            "robust_sigma": 5.828206078576726,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 20.39872127501854,
+            "lower_bound": 29.66977872498146,
+            "upper_bound": 70.46722127501855
+          },
+          "connections": {
+            "median": 30.0,
+            "mad": 3.0,
+            "robust_sigma": 4.4478,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 15.5673,
+            "lower_bound": 14.4327,
+            "upper_bound": 45.5673
+          },
+          "response_time_ms": {
+            "median": 15.036999999999999,
+            "mad": 1.2859999999999987,
+            "robust_sigma": 1.9243884358784287,
+            "minimum_absolute_tolerance": 5.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 6.7353595255745,
+            "lower_bound": 8.301640474425499,
+            "upper_bound": 21.7723595255745
+          },
+          "slow_queries": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 1.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 1.0,
+            "lower_bound": 0.0,
+            "upper_bound": 1.0
+          },
+          "connection_errors": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 0.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 0.0,
+            "lower_bound": 0.0,
+            "upper_bound": 0.0
+          }
+        },
+        "parameters": {
+          "mad": {
+            "threshold": 3.5,
+            "center": [
+              -0.0028465762249538893,
+              -0.024072134182577268,
+              -0.009459385496584469,
+              -0.40824829046386296,
+              0.0
+            ],
+            "mad_scale": [
+              0.8748560467788424,
+              0.9332581252322244,
+              0.8229036914701588,
+              1e-12,
+              1e-12
+            ],
+            "aggregation": "maximum absolute robust z-score over selected features",
+            "zero_mad": "train-only epsilon tolerance; no test-statistic fallback",
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "isolation_forest": {
+            "bootstrap": false,
+            "contamination": 0.01,
+            "max_features": 1.0,
+            "max_samples": "auto",
+            "n_estimators": 100,
+            "n_jobs": null,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "lof": {
+            "algorithm": "auto",
+            "contamination": 0.01,
+            "leaf_size": 30,
+            "metric": "minkowski",
+            "metric_params": null,
+            "n_jobs": null,
+            "n_neighbors": 20,
+            "novelty": true,
+            "p": 2,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "one_class_svm": {
+            "cache_size": 200,
+            "coef0": 0.0,
+            "degree": 3,
+            "gamma": "scale",
+            "kernel": "rbf",
+            "max_iter": -1,
+            "nu": 0.01,
+            "shrinking": true,
+            "tol": 0.001,
+            "verbose": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          }
+        },
+        "timings": {
+          "mad": {
+            "train_seconds": 0.00021239998750388622,
+            "predict_seconds": 6.439999560825527e-05
+          },
+          "isolation_forest": {
+            "train_seconds": 0.1011092999833636,
+            "predict_seconds": 0.014810900000156835
+          },
+          "lof": {
+            "train_seconds": 0.0074508000107016414,
+            "predict_seconds": 0.004875499987974763
+          },
+          "one_class_svm": {
+            "train_seconds": 0.001334200002020225,
+            "predict_seconds": 0.0013076000032015145
+          }
+        },
+        "noise_guard": {
+          "enabled": true,
+          "deviation_threshold": 3.5,
+          "minimum_absolute_tolerances": {
+            "queries_per_second": 2.0,
+            "connections": 2.0,
+            "response_time_ms": 5.0,
+            "slow_queries": 1.0,
+            "connection_errors": 0.0
+          },
+          "relative_tolerance": 0.05,
+          "description": "alert = raw anomaly AND any absolute metric deviation > max(threshold * max(1.4826*MAD, IQR/1.349), absolute floor, 5% of train median); training statistics only",
+          "score_policy": "Model decision scores are unchanged raw margins; larger means more normal. Indicator deviation scores are policy-scaled deviations, not robust z-scores.",
+          "score_definition": "signed deviation / (allowed_deviation / threshold); when allowed_deviation is zero, signed deviation * threshold using one event as the count resolution",
+          "zero_tolerance_score": {
+            "count_resolution": 1.0,
+            "one_event_score": 3.5,
+            "gate": "abs(deviation) > 0 remains independent of the reporting score"
+          }
+        },
+        "anomaly_counts": {
+          "mad": 44,
+          "isolation_forest": 2,
+          "lof": 44,
+          "one_class_svm": 44
+        },
+        "raw_anomaly_counts": {
+          "mad": 90,
+          "isolation_forest": 11,
+          "lof": 48,
+          "one_class_svm": 51
+        },
+        "raw_metrics": {
+          "mad": {
+            "precision": 0.4888888888888889,
+            "recall": 1.0,
+            "f1": 0.6567164179104478
+          },
+          "isolation_forest": {
+            "precision": 0.18181818181818182,
+            "recall": 0.045454545454545456,
+            "f1": 0.07272727272727272
+          },
+          "lof": {
+            "precision": 0.9166666666666666,
+            "recall": 1.0,
+            "f1": 0.9565217391304348
+          },
+          "one_class_svm": {
+            "precision": 0.8627450980392157,
+            "recall": 1.0,
+            "f1": 0.9263157894736842
+          }
+        },
+        "confusion_matrices": {
+          "mad": [
+            [
+              388,
+              0
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "isolation_forest": [
+            [
+              388,
+              0
+            ],
+            [
+              42,
+              2
+            ]
+          ],
+          "lof": [
+            [
+              388,
+              0
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "one_class_svm": [
+            [
+              388,
+              0
+            ],
+            [
+              0,
+              44
+            ]
+          ]
+        },
+        "raw_confusion_matrices": {
+          "mad": [
+            [
+              342,
+              46
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "isolation_forest": [
+            [
+              379,
+              9
+            ],
+            [
+              42,
+              2
+            ]
+          ],
+          "lof": [
+            [
+              384,
+              4
+            ],
+            [
+              0,
+              44
+            ]
+          ],
+          "one_class_svm": [
+            [
+              381,
+              7
+            ],
+            [
+              0,
+              44
+            ]
+          ]
+        },
+        "confusion_matrix_order": {
+          "rows": [
+            "normal",
+            "anomaly"
+          ],
+          "columns": [
+            "normal",
+            "anomaly"
+          ],
+          "layout": [
+            [
+              "TN",
+              "FP"
+            ],
+            [
+              "FN",
+              "TP"
+            ]
+          ]
+        },
+        "label_policy": "explicit held-out point labels (-1 anomaly, 1 normal)",
+        "scope": "Chronological multivariate analysis of MySQL activity samples from CSV or a read-only collector; held-out predictions only.",
+        "source_kind": "synthetic",
+        "source_name": "mysql_connection_spike.csv"
+      },
+      "metrics": {
+        "mad": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "isolation_forest": {
+          "precision": 1.0,
+          "recall": 0.045454545454545456,
+          "f1": 0.08695652173913043
+        },
+        "lof": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "one_class_svm": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      },
+      "operational_summary": {
+        "rows_analyzed": 432,
+        "raw_count": 95,
+        "alert_count": 44,
+        "alert_rate": 0.10185185185185185,
+        "status": "Cảnh báo cao",
+        "status_level": "high"
+      }
+    },
+    "mysql_latency_spike.csv": {
+      "sha256": "3562a6a18e80ac7c029eda36b9162fb8d63bce21d1b92a6277797162e741ca30",
+      "metadata": {
+        "analysis_mode": "dbms",
+        "rows": 1440,
+        "train_rows": 1008,
+        "test_rows": 432,
+        "split_index": 1008,
+        "train_fraction": 0.7,
+        "timestamp_col": "timestamp",
+        "value_col": "queries_per_second",
+        "label_col": "label",
+        "model_names": [
+          "mad",
+          "isolation_forest",
+          "lof",
+          "one_class_svm"
+        ],
+        "metric_cols": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "features": [
+          "queries_per_second",
+          "connections",
+          "response_time_ms",
+          "slow_queries",
+          "connection_errors"
+        ],
+        "contamination": 0.01,
+        "random_state": 42,
+        "warnings": [
+          "Suspected indicators describe observed deviations from the training baseline; they do not establish root cause.",
+          "Tolerance floors are explicit demonstration defaults, not calibrated MySQL capacity limits or an SLA.",
+          "Operational alerts require both a raw model anomaly and a metric deviation. This may suppress subtle multivariate anomalies; compare raw predictions and metrics as well."
+        ],
+        "cleaning": {
+          "input_rows": 1440,
+          "output_rows": 1440,
+          "dropped_rows": 0,
+          "reason": "strict validation; no rows dropped"
+        },
+        "train_baselines": {
+          "queries_per_second": {
+            "median": 50.0685,
+            "mad": 3.91,
+            "robust_sigma": 5.828206078576726,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 20.39872127501854,
+            "lower_bound": 29.66977872498146,
+            "upper_bound": 70.46722127501855
+          },
+          "connections": {
+            "median": 30.0,
+            "mad": 3.0,
+            "robust_sigma": 4.4478,
+            "minimum_absolute_tolerance": 2.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 15.5673,
+            "lower_bound": 14.4327,
+            "upper_bound": 45.5673
+          },
+          "response_time_ms": {
+            "median": 15.036999999999999,
+            "mad": 1.2859999999999987,
+            "robust_sigma": 1.9243884358784287,
+            "minimum_absolute_tolerance": 5.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 6.7353595255745,
+            "lower_bound": 8.301640474425499,
+            "upper_bound": 21.7723595255745
+          },
+          "slow_queries": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 1.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 1.0,
+            "lower_bound": 0.0,
+            "upper_bound": 1.0
+          },
+          "connection_errors": {
+            "median": 0.0,
+            "mad": 0.0,
+            "robust_sigma": 0.0,
+            "minimum_absolute_tolerance": 0.0,
+            "relative_tolerance": 0.05,
+            "allowed_deviation": 0.0,
+            "lower_bound": 0.0,
+            "upper_bound": 0.0
+          }
+        },
+        "parameters": {
+          "mad": {
+            "threshold": 3.5,
+            "center": [
+              -0.0028465762249538893,
+              -0.024072134182577268,
+              -0.009459385496584469,
+              -0.40824829046386296,
+              0.0
+            ],
+            "mad_scale": [
+              0.8748560467788424,
+              0.9332581252322244,
+              0.8229036914701588,
+              1e-12,
+              1e-12
+            ],
+            "aggregation": "maximum absolute robust z-score over selected features",
+            "zero_mad": "train-only epsilon tolerance; no test-statistic fallback",
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "isolation_forest": {
+            "bootstrap": false,
+            "contamination": 0.01,
+            "max_features": 1.0,
+            "max_samples": "auto",
+            "n_estimators": 100,
+            "n_jobs": null,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "lof": {
+            "algorithm": "auto",
+            "contamination": 0.01,
+            "leaf_size": 30,
+            "metric": "minkowski",
+            "metric_params": null,
+            "n_jobs": null,
+            "n_neighbors": 20,
+            "novelty": true,
+            "p": 2,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          },
+          "one_class_svm": {
+            "cache_size": 200,
+            "coef0": 0.0,
+            "degree": 3,
+            "gamma": "scale",
+            "kernel": "rbf",
+            "max_iter": -1,
+            "nu": 0.01,
+            "shrinking": true,
+            "tol": 0.001,
+            "verbose": false,
+            "preprocessing": {
+              "name": "StandardScaler",
+              "fit_rows": 1008,
+              "mean": [
+                50.081222222222216,
+                30.077380952380953,
+                15.051782738095238,
+                0.14285714285714285,
+                0.0
+              ],
+              "scale": [
+                4.469306709825395,
+                3.214544742649312,
+                1.562758817745119,
+                0.3499271061118826,
+                1.0
+              ]
+            }
+          }
+        },
+        "timings": {
+          "mad": {
+            "train_seconds": 0.0002004999842029065,
+            "predict_seconds": 6.550000398419797e-05
+          },
+          "isolation_forest": {
+            "train_seconds": 0.11330939998151734,
+            "predict_seconds": 0.01604410001891665
+          },
+          "lof": {
+            "train_seconds": 0.007998900022357702,
+            "predict_seconds": 0.00600490000215359
+          },
+          "one_class_svm": {
+            "train_seconds": 0.0016120000218506902,
+            "predict_seconds": 0.0015534000121988356
+          }
+        },
+        "noise_guard": {
+          "enabled": true,
+          "deviation_threshold": 3.5,
+          "minimum_absolute_tolerances": {
+            "queries_per_second": 2.0,
+            "connections": 2.0,
+            "response_time_ms": 5.0,
+            "slow_queries": 1.0,
+            "connection_errors": 0.0
+          },
+          "relative_tolerance": 0.05,
+          "description": "alert = raw anomaly AND any absolute metric deviation > max(threshold * max(1.4826*MAD, IQR/1.349), absolute floor, 5% of train median); training statistics only",
+          "score_policy": "Model decision scores are unchanged raw margins; larger means more normal. Indicator deviation scores are policy-scaled deviations, not robust z-scores.",
+          "score_definition": "signed deviation / (allowed_deviation / threshold); when allowed_deviation is zero, signed deviation * threshold using one event as the count resolution",
+          "zero_tolerance_score": {
+            "count_resolution": 1.0,
+            "one_event_score": 3.5,
+            "gate": "abs(deviation) > 0 remains independent of the reporting score"
+          }
+        },
+        "anomaly_counts": {
+          "mad": 43,
+          "isolation_forest": 24,
+          "lof": 43,
+          "one_class_svm": 43
+        },
+        "raw_anomaly_counts": {
+          "mad": 91,
+          "isolation_forest": 35,
+          "lof": 48,
+          "one_class_svm": 51
+        },
+        "raw_metrics": {
+          "mad": {
+            "precision": 0.4725274725274725,
+            "recall": 1.0,
+            "f1": 0.6417910447761194
+          },
+          "isolation_forest": {
+            "precision": 0.6857142857142857,
+            "recall": 0.5581395348837209,
+            "f1": 0.6153846153846154
+          },
+          "lof": {
+            "precision": 0.8958333333333334,
+            "recall": 1.0,
+            "f1": 0.945054945054945
+          },
+          "one_class_svm": {
+            "precision": 0.8431372549019608,
+            "recall": 1.0,
+            "f1": 0.9148936170212766
+          }
+        },
+        "confusion_matrices": {
+          "mad": [
+            [
+              389,
+              0
+            ],
+            [
+              0,
+              43
+            ]
+          ],
+          "isolation_forest": [
+            [
+              389,
+              0
+            ],
+            [
+              19,
+              24
+            ]
+          ],
+          "lof": [
+            [
+              389,
+              0
+            ],
+            [
+              0,
+              43
+            ]
+          ],
+          "one_class_svm": [
+            [
+              389,
+              0
+            ],
+            [
+              0,
+              43
+            ]
+          ]
+        },
+        "raw_confusion_matrices": {
+          "mad": [
+            [
+              341,
+              48
+            ],
+            [
+              0,
+              43
+            ]
+          ],
+          "isolation_forest": [
+            [
+              378,
+              11
+            ],
+            [
+              19,
+              24
+            ]
+          ],
+          "lof": [
+            [
+              384,
+              5
+            ],
+            [
+              0,
+              43
+            ]
+          ],
+          "one_class_svm": [
+            [
+              381,
+              8
+            ],
+            [
+              0,
+              43
+            ]
+          ]
+        },
+        "confusion_matrix_order": {
+          "rows": [
+            "normal",
+            "anomaly"
+          ],
+          "columns": [
+            "normal",
+            "anomaly"
+          ],
+          "layout": [
+            [
+              "TN",
+              "FP"
+            ],
+            [
+              "FN",
+              "TP"
+            ]
+          ]
+        },
+        "label_policy": "explicit held-out point labels (-1 anomaly, 1 normal)",
+        "scope": "Chronological multivariate analysis of MySQL activity samples from CSV or a read-only collector; held-out predictions only.",
+        "source_kind": "synthetic",
+        "source_name": "mysql_latency_spike.csv"
+      },
+      "metrics": {
+        "mad": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "isolation_forest": {
+          "precision": 1.0,
+          "recall": 0.5581395348837209,
+          "f1": 0.7164179104477612
+        },
+        "lof": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "one_class_svm": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      },
+      "operational_summary": {
+        "rows_analyzed": 432,
+        "raw_count": 96,
+        "alert_count": 43,
+        "alert_rate": 0.09953703703703703,
+        "status": "Cảnh báo cao",
+        "status_level": "high"
+      }
+    }
+  },
+  "comparison": [
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "raw_model",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 48,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.8888888888888888,
+      "TN": 384,
+      "FP": 48,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "raw_model",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 11,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.9745370370370371,
+      "TN": 421,
+      "FP": 11,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "raw_model",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.9884259259259259,
+      "TN": 427,
+      "FP": 5,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "raw_model",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.9814814814814815,
+      "TN": 424,
+      "FP": 8,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "operational_alert",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 1.0,
+      "TN": 432,
+      "FP": 0,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "operational_alert",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 1.0,
+      "TN": 432,
+      "FP": 0,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "operational_alert",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 1.0,
+      "TN": 432,
+      "FP": 0,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_normal.csv",
+      "scope": "operational_alert",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 1.0,
+      "TN": 432,
+      "FP": 0,
+      "FN": 0,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 80,
+      "precision": 0.55,
+      "recall": 1.0,
+      "f1": 0.7096774193548387,
+      "accuracy": 0.9166666666666666,
+      "TN": 352,
+      "FP": 36,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 11,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.8726851851851852,
+      "TN": 377,
+      "FP": 11,
+      "FN": 44,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 49,
+      "precision": 0.8979591836734694,
+      "recall": 1.0,
+      "f1": 0.946236559139785,
+      "accuracy": 0.9884259259259259,
+      "TN": 383,
+      "FP": 5,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 51,
+      "precision": 0.8627450980392157,
+      "recall": 1.0,
+      "f1": 0.9263157894736842,
+      "accuracy": 0.9837962962962963,
+      "TN": 381,
+      "FP": 7,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 44,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 388,
+      "FP": 0,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.8981481481481481,
+      "TN": 388,
+      "FP": 0,
+      "FN": 44,
+      "TP": 0
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 44,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 388,
+      "FP": 0,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_query_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 44,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 388,
+      "FP": 0,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 90,
+      "precision": 0.4888888888888889,
+      "recall": 1.0,
+      "f1": 0.6567164179104478,
+      "accuracy": 0.8935185185185185,
+      "TN": 342,
+      "FP": 46,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 11,
+      "precision": 0.18181818181818182,
+      "recall": 0.045454545454545456,
+      "f1": 0.07272727272727272,
+      "accuracy": 0.8819444444444444,
+      "TN": 379,
+      "FP": 9,
+      "FN": 42,
+      "TP": 2
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 48,
+      "precision": 0.9166666666666666,
+      "recall": 1.0,
+      "f1": 0.9565217391304348,
+      "accuracy": 0.9907407407407407,
+      "TN": 384,
+      "FP": 4,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 51,
+      "precision": 0.8627450980392157,
+      "recall": 1.0,
+      "f1": 0.9263157894736842,
+      "accuracy": 0.9837962962962963,
+      "TN": 381,
+      "FP": 7,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 44,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 388,
+      "FP": 0,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 2,
+      "precision": 1.0,
+      "recall": 0.045454545454545456,
+      "f1": 0.08695652173913043,
+      "accuracy": 0.9027777777777778,
+      "TN": 388,
+      "FP": 0,
+      "FN": 42,
+      "TP": 2
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 44,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 388,
+      "FP": 0,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_connection_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 44,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 388,
+      "FP": 0,
+      "FN": 0,
+      "TP": 44
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 91,
+      "precision": 0.4725274725274725,
+      "recall": 1.0,
+      "f1": 0.6417910447761194,
+      "accuracy": 0.8888888888888888,
+      "TN": 341,
+      "FP": 48,
+      "FN": 0,
+      "TP": 43
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 35,
+      "precision": 0.6857142857142857,
+      "recall": 0.5581395348837209,
+      "f1": 0.6153846153846154,
+      "accuracy": 0.9305555555555556,
+      "TN": 378,
+      "FP": 11,
+      "FN": 19,
+      "TP": 24
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 48,
+      "precision": 0.8958333333333334,
+      "recall": 1.0,
+      "f1": 0.945054945054945,
+      "accuracy": 0.9884259259259259,
+      "TN": 384,
+      "FP": 5,
+      "FN": 0,
+      "TP": 43
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "raw_model",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 51,
+      "precision": 0.8431372549019608,
+      "recall": 1.0,
+      "f1": 0.9148936170212766,
+      "accuracy": 0.9814814814814815,
+      "TN": 381,
+      "FP": 8,
+      "FN": 0,
+      "TP": 43
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "mad",
+      "test_rows": 432,
+      "alerts": 43,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 389,
+      "FP": 0,
+      "FN": 0,
+      "TP": 43
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "isolation_forest",
+      "test_rows": 432,
+      "alerts": 24,
+      "precision": 1.0,
+      "recall": 0.5581395348837209,
+      "f1": 0.7164179104477612,
+      "accuracy": 0.9560185185185185,
+      "TN": 389,
+      "FP": 0,
+      "FN": 19,
+      "TP": 24
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "lof",
+      "test_rows": 432,
+      "alerts": 43,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 389,
+      "FP": 0,
+      "FN": 0,
+      "TP": 43
+    },
+    {
+      "dataset": "mysql_latency_spike.csv",
+      "scope": "operational_alert",
+      "algorithm": "one_class_svm",
+      "test_rows": 432,
+      "alerts": 43,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "TN": 389,
+      "FP": 0,
+      "FN": 0,
+      "TP": 43
+    }
+  ]
+}

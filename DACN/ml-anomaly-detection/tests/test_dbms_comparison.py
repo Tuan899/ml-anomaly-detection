@@ -138,13 +138,13 @@ class DBMSComparisonTests(unittest.TestCase):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 compare_dbms_datasets(observations(), observations(), **kwargs)
 
-    def test_bundled_demo_uses_1008_reference_and_two_432_heldouts(self):
-        runs = compare_dbms_datasets(ROOT / "data/mysql_normal.csv", ROOT / "data/mysql_anomalous.csv", label_col="label")
+    def test_compact_demo_uses_seven_reference_and_two_three_row_heldouts(self):
+        runs = compare_dbms_datasets(ROOT / "data/mysql_normal.csv", ROOT / "data/mysql_query_spike.csv", label_col="label")
         for run in runs.values():
-            self.assertEqual(run.metadata["train_rows"], 1008)
-            self.assertEqual(run.metadata["test_rows"], 432)
-            self.assertEqual(run.metadata["comparison"]["reference_train_rows"], 1008)
-            self.assertEqual(run.metadata["comparison"]["prediction_batch_rows"], 864)
+            self.assertEqual(run.metadata["train_rows"], 7)
+            self.assertEqual(run.metadata["test_rows"], 3)
+            self.assertEqual(run.metadata["comparison"]["reference_train_rows"], 7)
+            self.assertEqual(run.metadata["comparison"]["prediction_batch_rows"], 6)
 
 
 class ComparisonHTTPTests(unittest.TestCase):

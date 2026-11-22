@@ -27,7 +27,7 @@ REFERENCE_MODELS = ("mad", "isolation_forest", "lof")
 REFERENCE_ROWS = 4032
 REFERENCE_SPLIT = 3550
 REFERENCE_CONTAMINATION = 1 / REFERENCE_SPLIT
-REFERENCE_DATA = Path(__file__).resolve().parents[1] / "data" / "ec2_cpu_utilization.csv"
+REFERENCE_DATA = Path(__file__).resolve().parents[1] / "resources" / "nab" / "ec2_cpu_utilization.csv"
 
 
 def _reference_frame(source, timestamp_col: str, value_col: str) -> pd.DataFrame:
@@ -55,7 +55,7 @@ def _reference_frame(source, timestamp_col: str, value_col: str) -> pd.DataFrame
     if not np.isfinite(values).all():
         raise ValueError("Notebook reference requires the original finite numeric CPU values without missing rows")
     if not REFERENCE_DATA.is_file():
-        raise ValueError("Notebook reference data is missing; restore data/ec2_cpu_utilization.csv before running this profile")
+        raise ValueError("Notebook reference data is missing; restore resources/nab/ec2_cpu_utilization.csv before running this profile")
     canonical = pd.read_csv(REFERENCE_DATA)
     if len(canonical) != REFERENCE_ROWS or "value" not in canonical:
         raise ValueError("Bundled notebook reference data is invalid; restore the canonical NAB CSV")

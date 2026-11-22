@@ -21,7 +21,7 @@ from frontend.input_data import METRIC_NAMES, prepare_mysql_csv
 
 class MySQLInputDataTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.frame = pd.read_csv(PROJECT_ROOT / "data" / "mysql_normal.csv").iloc[:20].copy()
+        self.frame = pd.read_csv(PROJECT_ROOT / "data" / "mysql_normal.csv").copy()
 
     def content(self, frame=None) -> bytes:
         return (self.frame if frame is None else frame).to_csv(index=False).encode("utf-8")
@@ -67,14 +67,14 @@ class MySQLInputDataTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "số hữu hạn không âm"):
                     prepare_mysql_csv(self.content(changed))
         normalized, valid, _ = prepare_mysql_csv(self.content())
-        self.assertEqual(20, len(valid))
-        self.assertEqual(20, len(pd.read_csv(BytesIO(normalized))))
+        self.assertEqual(len(self.frame), len(valid))
+        self.assertEqual(len(self.frame), len(pd.read_csv(BytesIO(normalized))))
 
     def test_invalid_duplicate_and_numeric_times_are_rejected(self) -> None:
         for changed in (
             self.frame.assign(timestamp=["bad-date"] + self.frame["timestamp"].iloc[1:].tolist()),
             self.frame.assign(timestamp=[self.frame["timestamp"].iloc[1]] + self.frame["timestamp"].iloc[1:].tolist()),
-            self.frame.assign(timestamp=list(range(20))),
+            self.frame.assign(timestamp=list(range(len(self.frame)))),
         ):
             with self.subTest(first_time=changed["timestamp"].iloc[0]):
                 with self.assertRaisesRegex(ValueError, "[Tt]hời gian"):
@@ -84,12 +84,14 @@ class MySQLInputDataTests(unittest.TestCase):
         _, unlabeled, mapping = prepare_mysql_csv(self.content(self.frame.drop(columns=["label"])))
         self.assertNotIn("label", unlabeled)
         self.assertNotIn("label", mapping)
-        for labels in ([0, 1] * 10, [True] * 20, ["normal"] * 20):
+        rows = len(self.frame)
+        for labels in ([index % 2 for index in range(rows)], [True] * rows, ["normal"] * rows):
             with self.subTest(labels=labels[:2]):
                 with self.assertRaisesRegex(ValueError, "Nhãn kiểm thử phải dùng 1"):
                     prepare_mysql_csv(self.content(self.frame.assign(label=labels)))
-        _, labeled, _ = prepare_mysql_csv(self.content(self.frame.assign(label=[1, -1] * 10)))
-        self.assertEqual([1, -1] * 10, labeled["label"].tolist())
+        labels = [1 if index % 2 == 0 else -1 for index in range(rows)]
+        _, labeled, _ = prepare_mysql_csv(self.content(self.frame.assign(label=labels)))
+        self.assertEqual(labels, labeled["label"].tolist())
 
     def test_unit_conversion_is_not_guessed_from_seconds_or_generic_latency(self) -> None:
         for unknown in ("latency_seconds", "response_time_s", "latency"):

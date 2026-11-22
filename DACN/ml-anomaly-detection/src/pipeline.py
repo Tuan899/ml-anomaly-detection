@@ -1,5 +1,6 @@
 """One chronological detection pipeline shared by CLI, HTTP and Streamlit."""
 from __future__ import annotations
+from decimal import Decimal
 import numpy as np
 import pandas as pd
 from .contracts import DetectionRun
@@ -10,7 +11,10 @@ def run_detection(source, timestamp_col='timestamp', value_col='value', label_co
                   train_fraction=.7, contamination=.01, model_names=None,
                   include_time=False, split_index=None) -> DetectionRun:
     """Fit only past rows; predict only subsequent rows. Labels are opt-in, {-1,1}."""
-    names = list(MODEL_NAMES if model_names is None else [model_names] if isinstance(model_names, str) else model_names)
+    try:
+        names = list(MODEL_NAMES if model_names is None else [model_names] if isinstance(model_names, str) else model_names)
+    except TypeError as exc:
+        raise ValueError('Select unique algorithms from: ' + ', '.join(MODEL_NAMES)) from exc
     if not names or any(not isinstance(name, str) or name not in MODEL_NAMES for name in names) or len(set(names)) != len(names):
         raise ValueError('Select unique algorithms from: ' + ', '.join(MODEL_NAMES))
     numeric_types = (int, float, np.integer, np.floating)
@@ -18,6 +22,8 @@ def run_detection(source, timestamp_col='timestamp', value_col='value', label_co
         raise ValueError('train_fraction must lie in (0, 1)')
     if isinstance(contamination, bool) or not isinstance(contamination, numeric_types) or not np.isfinite(contamination) or not 0 < contamination <= .5:
         raise ValueError('contamination must lie in (0, 0.5]')
+    if not isinstance(include_time, (bool, np.bool_)):
+        raise ValueError('include_time must be a boolean')
     frame = load_timeseries(source, timestamp_col, value_col)
     if value_col is None:
         value_col = frame.attrs.get('value_col')
@@ -32,14 +38,16 @@ def run_detection(source, timestamp_col='timestamp', value_col='value', label_co
     if label_col:
         if label_col not in frame:
             raise ValueError(f'Missing label column: {label_col}')
+        invalid_label_types = frame[label_col].map(lambda value: isinstance(value, (bool, np.bool_, complex, np.complexfloating))).any()
+        if invalid_label_types:
+            raise ValueError('Labels must be explicit -1 (anomaly) or 1 (normal), without missing values')
         labels = pd.to_numeric(frame[label_col], errors='coerce')
-        has_boolean_labels = frame[label_col].map(lambda value: isinstance(value, (bool, np.bool_))).any()
-        if has_boolean_labels or labels.isna().any() or not labels.isin([-1, 1]).all():
+        if labels.isna().any() or not labels.isin([-1, 1]).all():
             raise ValueError('Labels must be explicit -1 (anomaly) or 1 (normal), without missing values')
         frame[label_col] = labels.astype(int)
     if split_index is not None and (isinstance(split_index, bool) or not isinstance(split_index, (int, np.integer))):
         raise ValueError('split_index must be an integer')
-    split = int(len(frame) * train_fraction) if split_index is None else int(split_index)
+    split = int(Decimal(len(frame)) * Decimal(str(train_fraction))) if split_index is None else int(split_index)
     if split < 3 or split >= len(frame):
         raise ValueError('Need at least 3 training rows and 1 test row; adjust split or provide more data')
     features = build_feature_matrix(frame, value_col, timestamp_col, include_time=include_time)

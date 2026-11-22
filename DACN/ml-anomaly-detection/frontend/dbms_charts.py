@@ -45,11 +45,12 @@ def build_trend_figure(run, model: str, metric: str, dark: bool = False,
 
     # Keep these two traces first: actual values, then selected-model alerts.
     figure = go.Figure(go.Scatter(
-        x=visible[time], y=visible[metric], mode="lines", name="Giá trị thực tế",
-        line={"color": actual, "width": 2.2}, legendrank=10,
+        x=visible[time], y=visible[metric], mode="lines+markers" if len(visible) <= 12 else "lines", name="Giá trị quan sát",
+        line={"color": actual, "width": 2.2}, marker={"size": 5, "color": actual}, legendrank=10,
+        connectgaps=False,
         hovertemplate=("%{x|%d/%m/%Y %H:%M:%S} UTC<br>"
                        + METRIC_NAMES[metric] + ": %{y} " + METRIC_UNITS[metric]
-                       + "<extra>Giá trị thực tế</extra>"),
+                       + "<extra>Giá trị quan sát</extra>"),
     ))
     figure.add_trace(go.Scatter(
         x=flags[time], y=flags[metric], name="Thời điểm cảnh báo đa chỉ số",
@@ -107,19 +108,19 @@ def build_trend_figure(run, model: str, metric: str, dark: bool = False,
     axis = dict(
         tickfont={"color": ink, "size": 13}, title_font={"color": ink, "size": 14},
         gridcolor=grid, zerolinecolor=grid, linecolor=grid,
-        automargin=True,
+        automargin=True, zeroline=False,
     )
     figure.update_layout(
         template="plotly_dark" if dark else "plotly_white",
-        height=390, font={"family": "Arial, sans-serif", "size": 13, "color": ink},
+        height=430, autosize=True, font={"family": "Segoe UI, Arial, sans-serif", "size": 13, "color": ink},
         paper_bgcolor=background, plot_bgcolor=background,
-        hovermode="closest",
-        hoverlabel={"bgcolor": background, "font": {"color": ink, "size": 13}},
+        hovermode="closest", dragmode="pan", uirevision=f"dbms-{model}-{metric}-{full_history}",
+        hoverlabel={"bgcolor": background, "font": {"color": ink, "size": 13}, "align": "left"},
         xaxis={**axis, "title_text": "Thời gian (UTC)", "type": "date",
-               "tickformat": "%H:%M\n%d/%m", "nticks": 6},
+               "tickformat": "%H:%M\n%d/%m", "nticks": 6, "showgrid": False},
         yaxis={**axis, "title_text": METRIC_UNITS[metric], "rangemode": "nonnegative"},
         legend={"orientation": "h", "x": 0, "y": 1.24, "xanchor": "left", "yanchor": "top",
-                "font": {"color": ink, "size": 13}, "bgcolor": background},
-        margin={"l": 70, "r": 25, "t": 83, "b": 66},
+                "font": {"color": ink, "size": 12}, "bgcolor": background},
+        margin={"l": 58, "r": 12, "t": 105, "b": 60},
     )
     return figure

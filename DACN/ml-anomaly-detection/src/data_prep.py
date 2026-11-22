@@ -82,7 +82,12 @@ def load_timeseries(
     frame = read_csv_frame(source)
     if timestamp_col not in frame.columns:
         raise ValueError(f"Missing timestamp column: {timestamp_col}")
-    timestamps = pd.to_datetime(frame[timestamp_col], errors="coerce", utc=True)
+    raw_timestamps = frame[timestamp_col]
+    if pd.api.types.is_numeric_dtype(raw_timestamps) or raw_timestamps.map(
+        lambda value: isinstance(value, (bool, np.bool_, int, float, complex, np.number))
+    ).any():
+        raise ValueError(f"Column {timestamp_col} contains invalid timestamps; use datetime strings")
+    timestamps = pd.to_datetime(raw_timestamps, errors="coerce", utc=True)
     if timestamps.isna().any():
         raise ValueError(f"Column {timestamp_col} contains invalid timestamps")
     frame[timestamp_col] = timestamps.dt.tz_convert(None)
@@ -92,7 +97,7 @@ def load_timeseries(
         for candidate in frame.columns:
             if candidate == timestamp_col or str(candidate).lower() in LABEL_COLUMNS:
                 continue
-            if pd.api.types.is_bool_dtype(frame[candidate]):
+            if frame[candidate].map(lambda value: isinstance(value, (bool, np.bool_, complex, np.complexfloating))).any():
                 continue
             candidate_values = pd.to_numeric(frame[candidate], errors="coerce")
             if np.isfinite(candidate_values.to_numpy(dtype=float, na_value=np.nan)).any():
@@ -104,8 +109,8 @@ def load_timeseries(
         raise ValueError(f"Missing value column: {value_col}")
     if value_col == timestamp_col or str(value_col).lower() in LABEL_COLUMNS:
         raise ValueError("value_col must be an activity metric, not a timestamp or label")
-    if pd.api.types.is_bool_dtype(frame[value_col]):
-        raise ValueError("Boolean columns cannot be used as activity metrics")
+    if frame[value_col].map(lambda value: isinstance(value, (bool, np.bool_, complex, np.complexfloating))).any():
+        raise ValueError("Activity metrics must contain real numeric values, not booleans or complex numbers")
     original_rows = len(frame)
     frame[value_col] = pd.to_numeric(frame[value_col], errors="coerce")
     valid = np.isfinite(frame[value_col].to_numpy(dtype=float, na_value=np.nan))
@@ -224,17 +229,22 @@ def add_time_features(frame: pd.DataFrame, timestamp_col: str = "timestamp") -> 
 
 def summarize_seasonality(frame: pd.DataFrame, value_col: str, timestamp_col: str = "timestamp") -> dict[str, pd.DataFrame]:
     """Return observed hourly, weekday, and monthly descriptive aggregates."""
-    enriched = add_time_features(frame, timestamp_col)
-    if value_col not in enriched.columns:
+    if value_col not in frame.columns:
         raise ValueError(f"Missing value column: {value_col}")
+    if timestamp_col not in frame.columns:
+        raise ValueError(f"Missing timestamp column: {timestamp_col}")
+    # Keep calendar grouping keys separate from measurements named hour, month,
+    # or another derived feature; adding them to the source would overwrite it.
+    calendar = add_time_features(frame[[timestamp_col]], timestamp_col)
+    values = frame[value_col]
     return {
-        "hourly": enriched.groupby("hour")[value_col].agg(["mean", "median", "std"]).reset_index(),
-        "weekday": enriched.groupby("day_of_week")[value_col].agg(["mean", "median", "std"]).reset_index(),
-        "monthly": enriched.groupby("month")[value_col].agg(["mean", "median", "std"]).reset_index(),
+        "hourly": values.groupby(calendar["hour"]).agg(["mean", "median", "std"]).reset_index(),
+        "weekday": values.groupby(calendar["day_of_week"]).agg(["mean", "median", "std"]).reset_index(),
+        "monthly": values.groupby(calendar["month"]).agg(["mean", "median", "std"]).reset_index(),
     }
 
 
-def download_nab_dataset(name: str, output_dir: str | Path = "data") -> Path:
+def download_nab_dataset(name: str, output_dir: str | Path = "resources/nab") -> Path:
     """Download a named public NAB dataset; annotations are a separate input."""
     if name not in NAB_DATASETS:
         raise ValueError(f"Unknown NAB dataset {name!r}; choose from {sorted(NAB_DATASETS)}")

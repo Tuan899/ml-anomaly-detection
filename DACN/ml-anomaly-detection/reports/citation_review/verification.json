@@ -1,0 +1,51 @@
+{
+  "documentId": "1rX5hOIYS2-DBkhkfavwSxk9-ce-gjSz2Sa71p0HCgUg",
+  "tabId": "t.amovavlwnibx",
+  "revision": "AHj4eMShD7EibfD7yPxtltONqwEjJ4uEP8w2pglWKxV-0lVtiIgpdGPJr-t6-NwYgCdvxl2MynxnchGUpIJIRJXgB5aw9Tc0dFOG5UavFL0",
+  "tabs": [
+    {
+      "id": "t.0",
+      "title": "ĐỀ CƯƠNG GK"
+    },
+    {
+      "id": "t.amovavlwnibx",
+      "title": "ĐỒ ÁN CHUYÊN NGÀNH"
+    }
+  ],
+  "firstCitationOrder": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "referenceCount": 12,
+  "placeholders": 0,
+  "tables": 9,
+  "inlineImages": 5,
+  "coverExtraPageBreaks": 0,
+  "proposalTabBodyUnchanged": true,
+  "endnote": {
+    "risRecords": 12,
+    "liveFieldsCreated": false,
+    "softwareImportTested": false
+  },
+  "realMySQLTested": false,
+  "finalReviewCorrections": {
+    "selectedConfiguration": true,
+    "labelColumn": true,
+    "nabCaptionCount": 1
+  },
+  "pdfReview": {
+    "pages": 44,
+    "reportMissingGlyphs": 0,
+    "reportBlankPages": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "python": "3.10.9",
+  "numpy": "2.2.6",
+  "pandas": "2.3.3",
+  "rows": 20000,
+  "repeats": 5,
+  "material_rows": 1000,
+  "median_seconds": 0.018119700020179152,
+  "measurements_seconds": [
+    0.01790510001592338,
+    0.017587799986358732,
+    0.01864019999629818,
+    0.018119700020179152,
+    0.018136800004867837
+  ],
+  "output_sha256": "2265a5c76605a66bd89f9f16d1d5147d2dc6d41626b23eb3020068373a1a72a7",
+  "scope": "Evidence generation only; excludes model fitting, HTTP and browser rendering."
+}

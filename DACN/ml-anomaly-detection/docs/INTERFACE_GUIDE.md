@@ -2,9 +2,13 @@
 
 ANOMALY LAB kiểm tra hoạt động MySQL qua năm chỉ số: truy vấn mỗi giây, kết nối đang mở, thời gian phản hồi, truy vấn chậm và kết nối thất bại. Ứng dụng giúp tìm thời điểm cần kiểm tra; một cảnh báo chưa chứng minh được nguyên nhân sự cố.
 
+Chế độ mặc định hiện là **Giám sát trực tuyến**, có ba màn hình và lưu lịch sử
+bằng SQLite. Xem [demo giám sát mới](DEMO_MONITORING.md). Các bước bên dưới
+áp dụng cho hai chế độ phân tích CSV **Cơ bản** và **Nâng cao** được giữ lại.
+
 ## Chạy ứng dụng
 
-Mở hai terminal PowerShell tại thư mục `ml-anomaly-detection`. Dùng Python từ môi trường đã cài `requirements.txt`:
+Tại thư mục `ml-anomaly-detection`, chạy `.\CHAY_UNG_DUNG.bat` để mở cả backend và giao diện. Nếu muốn chạy riêng, mở hai terminal PowerShell và dùng Python từ môi trường đã cài `requirements.txt`:
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -26,7 +30,7 @@ Mở địa chỉ Streamlit in trong terminal, thường là `http://localhost:8
 
 ## Demo nhanh: ba bước
 
-Giao diện mặc định là **Cơ bản**. Người dùng không cần chọn thuật toán, cột dữ liệu hoặc tỷ lệ huấn luyện.
+Chọn **Cơ bản** ở thanh bên. Trong chế độ này, người dùng không cần chọn thuật toán, cột dữ liệu hoặc tỷ lệ huấn luyện.
 
 1. **Chọn dữ liệu.** Giữ **Dùng dữ liệu mẫu**, chọn **Hoạt động bình thường**.
 2. **Phân tích.** Bấm **Bắt đầu phân tích** và đợi các bước đọc dữ liệu, chuẩn bị, phân tích và tổng hợp hoàn tất.
@@ -34,7 +38,9 @@ Giao diện mặc định là **Cơ bản**. Người dùng không cần chọn 
 
 Tiếp theo, bấm **Phân tích dữ liệu khác**, chọn **Hoạt động bất thường** rồi chạy lại. Rê chuột lên biểu đồ để đọc thời điểm và giá trị thực tế. Mở bảng thời điểm đáng chú ý để đối chiếu chỉ số thay đổi với mức tham chiếu.
 
-Hai bộ mẫu là dữ liệu tổng hợp tái lập được trong `data/mysql_normal.csv` và `data/mysql_anomalous.csv`. Nhãn ghi nhận các sự kiện được chèn vào dữ liệu, không phải dự đoán của thuật toán. Hiệu quả trên bộ mẫu không bảo đảm hiệu quả trên máy chủ thực.
+Thư mục `data` chỉ có ba tệp tổng hợp, mỗi tệp **10 dòng**: `mysql_normal.csv`, `mysql_query_spike.csv`, `mysql_latency_spike.csv`. Hai bộ đầu là mẫu mặc định. Cả ba có cùng 7 dòng đầu bình thường để học; 3 dòng cuối được kiểm tra. Mẫu tăng QPS có giá trị **300/350** ở dòng **8–9 (09:07–09:08)**, trong khi bộ bình thường là **51/49**. Dòng 10 trở lại bình thường. Mẫu phản hồi chậm có ở Nâng cao hoặc tải lên bằng CSV. Nhãn ghi nhận các sự kiện được chèn, không phải dự đoán. Các mẫu ngắn dùng để thử chức năng, chưa đủ để đánh giá chất lượng trên máy chủ thực.
+
+Mở **Xem dữ liệu trước khi phân tích** để thấy đủ 10 dòng, không cần cuộn tới một giờ xa trong ngày. Với CSV dài hơn, có thể chọn toàn bộ dữ liệu, lọc nhãn bất thường hoặc nhập giờ vào **Tìm thời điểm**.
 
 ## Đọc ba câu trả lời trên màn hình
 
@@ -58,7 +64,7 @@ Màn hình đặt bộ bình thường bên trái và bộ có dấu hiệu bấ
 
 Hai bộ được đánh giá bằng cùng mô hình và cách chuẩn hóa học từ phần huấn luyện của bộ bình thường. Nhãn kiểm thử không tham gia huấn luyện. Việc một giá trị lớn hơn bộ còn lại chưa đủ để kết luận bất thường; kết luận dựa trên dự đoán và bằng chứng so với nền tham chiếu chung.
 
-## Tải CSV và kết nối MySQL
+## Tải CSV hoạt động MySQL
 
 Chọn **Tải tệp CSV** nếu đã có số đo. Giao diện tự nhận diện cột phổ biến và báo rõ các cột còn thiếu. Định dạng chuẩn:
 
@@ -72,20 +78,25 @@ Ví dụ hai dòng chỉ minh họa định dạng. Cần chuỗi dữ liệu d�
 
 Trong chế độ so sánh CSV, tải riêng bộ bình thường và bộ cần đối chiếu. Giữ cùng ý nghĩa chỉ số, đơn vị và chu kỳ lấy mẫu giữa hai tệp để so sánh có ý nghĩa.
 
-Chọn **Kết nối MySQL** để thu một đợt số liệu thực tế. Nhập tài khoản chỉ đọc, thông tin kết nối và cấu hình lấy mẫu, rồi bấm **Bắt đầu phân tích**. Ở chế độ Cơ bản, một lần bấm sẽ thu mẫu rồi phân tích; việc chọn nguồn hoặc nhập mật khẩu chưa tự kết nối. Chế độ so sánh dùng hai bộ mẫu hoặc hai CSV. Xem [thiết lập MySQL](MYSQL_SETUP.md) để chuẩn bị tài khoản và TLS. Độ trễ đo trực tiếp là thời gian khứ hồi của `SELECT 1`, không phải thời gian trung bình của mọi truy vấn nghiệp vụ. Dữ liệu thực không tự có nhãn kiểm thử.
+Với số liệu từ máy chủ thật, thu dữ liệu bằng công cụ bên ngoài hoặc gọi riêng mô-đun thu thập, lưu thành CSV rồi chọn **Tải tệp CSV**. Trong Nâng cao, chọn **Giám sát hệ quản trị CSDL → Tải CSV**. Xem [thiết lập MySQL](MYSQL_SETUP.md) để chuẩn bị tài khoản, TLS và thu mẫu bằng Python. Độ trễ từ mô-đun thu thập là thời gian khứ hồi của `SELECT 1`, không phải thời gian trung bình của mọi truy vấn nghiệp vụ. Dữ liệu thực không tự có nhãn kiểm thử.
 
 ## Nghiên cứu và đánh giá trong chế độ Nâng cao
 
-Chọn **Nâng cao** ở thanh bên để sử dụng toàn bộ luồng nghiên cứu hiện có. Chọn **Giám sát hệ quản trị CSDL MySQL** hoặc **CSV một chỉ số / notebook NAB**.
+Chọn **Nâng cao** ở thanh bên để sử dụng toàn bộ luồng nghiên cứu hiện có. Chọn **Giám sát hệ quản trị CSDL** hoặc **CSV một chỉ số / notebook NAB**.
 
 Trong luồng MySQL, có thể chọn một hoặc nhiều thuật toán MAD, Isolation Forest, LOF, One-Class SVM; thay tỷ lệ huấn luyện, tham số, cột thời gian, nhãn và chính sách cảnh báo. Hãy giữ cùng cấu hình khi so sánh hiệu quả giữa các bộ kiểm thử.
+
+Sau khi chọn **Hoạt động bất thường**, chọn **Kịch bản bất thường** để thử riêng
+**Tăng lượng truy vấn** hoặc **Phản hồi chậm**. Cả ba bộ 10 dòng được mô tả
+trong `docs/mysql_datasets_manifest.json`. Mẫu phản hồi chậm có 180/220 ms
+và 8/10 truy vấn chậm ở dòng 8–9.
 
 Nếu CSV có tên cột riêng, mở **Cấu hình cột thời gian và cột đặc trưng**, bật **Ánh xạ tên cột nguồn sang các chỉ số MySQL** và chọn một cột thời gian cùng năm cột chỉ số. Mỗi cột nguồn chỉ được chọn một lần. Ánh xạ đổi tên cho lần phân tích; không tự đổi đơn vị, không biến bộ đếm tích lũy thành số phát sinh và không sửa tệp gốc.
 
 Quy trình đánh giá trước giảng viên:
 
 1. Chọn bộ **Hoạt động bình thường**, nhãn `label`, bốn thuật toán và chạy. Trong **Đánh giá**, xem số cảnh báo nhầm. Bộ không có bất thường thật chưa đo được khả năng phát hiện qua Recall.
-2. Chọn bộ **Hoạt động bất thường**, giữ nguyên cấu hình và chạy lại. Đối chiếu thời điểm phát hiện với các kịch bản trong `data/mysql_demo_manifest.json`.
+2. Chọn bộ **Hoạt động bất thường**, chọn kịch bản, giữ nguyên cấu hình và chạy lại. Đối chiếu dòng 8–9 với `docs/mysql_datasets_manifest.json`.
 3. Trong **Đánh giá**, đọc Precision, Recall, F1-score và confusion matrix. So sánh cả **Dự đoán mô hình gốc** và **Cảnh báo sau lọc** để thấy tác động của chính sách vận hành.
 4. Đọc bảng so sánh bốn thuật toán: cảnh báo đúng, cảnh báo nhầm, bỏ sót và thời gian xử lý. Nhiều cảnh báo hơn chưa chứng minh thuật toán tốt hơn.
 5. Xuất CSV/JSON để kiểm tra lại từng dự đoán, nhãn, chỉ số và cấu hình thực sự đã chạy.
@@ -101,6 +112,11 @@ Xem [demo kỹ thuật MySQL](DEMO_MYSQL.md) để đọc cách chia theo thời
 Sau khi đổi nguồn hoặc cấu hình, phải chạy phân tích lại. Kết quả cũ được ẩn để tránh hiểu nhầm là kết quả của dữ liệu mới. Nút **Phân tích dữ liệu khác** đưa về bước chọn dữ liệu.
 
 Nếu không kết nối được API, kiểm tra terminal FastAPI và địa chỉ `ANOMALY_API_URL`. Giao diện không thay thế lỗi bằng dự đoán giả hoặc tự huấn luyện cục bộ. Nếu CSV dùng tên cột riêng, đổi tên theo định dạng chuẩn hoặc ánh xạ trong Nâng cao. Nếu thật sự thiếu số đo, cần bổ sung dữ liệu. Chế độ MySQL cần đủ năm chỉ số; Nâng cao có luồng CSV một chỉ số riêng khi dữ liệu chỉ chứa một đại lượng.
+
+Nếu chỉ một trong hai CSV có nhãn, ứng dụng vẫn so sánh và phát hiện cảnh báo,
+đồng thời giải thích rằng lần chạy chưa tính Precision/Recall/F1. Cung cấp nhãn
+`1/-1` cho cả hai tệp nếu cần chấm điểm. Khi bộ lọc mức cảnh báo không có kết quả,
+chọn **Tất cả** để xem lại các cảnh báo hiện có.
 
 ## Các phần mã nguồn của giao diện
 

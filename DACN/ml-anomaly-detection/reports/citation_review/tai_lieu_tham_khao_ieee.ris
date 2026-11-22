@@ -1,0 +1,181 @@
+TY  - JOUR
+ID  - 1
+AU  - Chandola, Varun
+AU  - Banerjee, Arindam
+AU  - Kumar, Vipin
+TI  - Anomaly detection: A survey
+JO  - ACM Computing Surveys
+PY  - 2009
+VL  - 41
+IS  - 3
+SP  - 15:1
+EP  - 15:58
+DO  - 10.1145/1541880.1541882
+UR  - https://doi.org/10.1145/1541880.1541882
+Y2  - 2026/11/14
+N1  - Article number 15; pages 1-58.
+ER  -
+
+TY  - JOUR
+ID  - 2
+AU  - Blázquez-García, Ane
+AU  - Conde, Angel
+AU  - Mori, Usue
+AU  - Lozano, Jose A.
+TI  - A review on outlier/anomaly detection in time series data
+JO  - ACM Computing Surveys
+PY  - 2021
+VL  - 54
+IS  - 3
+SP  - 56:1
+EP  - 56:33
+DO  - 10.1145/3444690
+UR  - https://doi.org/10.1145/3444690
+Y2  - 2026/11/14
+N1  - Article number 56; pages 1-33.
+ER  -
+
+TY  - CONF
+ID  - 3
+AU  - Liu, Fei Tony
+AU  - Ting, Kai Ming
+AU  - Zhou, Zhi-Hua
+TI  - Isolation Forest
+T2  - 2008 Eighth IEEE International Conference on Data Mining
+PY  - 2008
+SP  - 413
+EP  - 422
+DO  - 10.1109/ICDM.2008.17
+UR  - https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf?q=isolation-forest
+Y2  - 2026/11/14
+N1  - Published Table 3, p. 419: AUC and runtime; do not treat as project results.
+ER  -
+
+TY  - JOUR
+ID  - 4
+AU  - Breunig, Markus M.
+AU  - Kriegel, Hans-Peter
+AU  - Ng, Raymond T.
+AU  - Sander, Jörg
+TI  - LOF: Identifying density-based local outliers
+JO  - ACM SIGMOD Record
+PY  - 2000
+VL  - 29
+IS  - 2
+SP  - 93
+EP  - 104
+DO  - 10.1145/335191.335388
+UR  - https://www.dbs.ifi.lmu.de/Publikationen/Papers/LOF.pdf
+Y2  - 2026/11/14
+ER  -
+
+TY  - ELEC
+ID  - 5
+AU  - scikit-learn developers,
+TI  - Novelty and outlier detection
+JO  - scikit-learn documentation
+UR  - https://scikit-learn.org/stable/modules/outlier_detection.html
+Y2  - 2026/11/14
+ER  -
+
+TY  - JOUR
+ID  - 6
+AU  - Schölkopf, Bernhard
+AU  - Platt, John C.
+AU  - Shawe-Taylor, John
+AU  - Smola, Alex J.
+AU  - Williamson, Robert C.
+TI  - Estimating the support of a high-dimensional distribution
+JO  - Neural Computation
+PY  - 2001
+VL  - 13
+IS  - 7
+SP  - 1443
+EP  - 1471
+DO  - 10.1162/089976601750264965
+UR  - https://doi.org/10.1162/089976601750264965
+Y2  - 2026/11/14
+ER  -
+
+TY  - ELEC
+ID  - 7
+AU  - NIST/SEMATECH,
+TI  - Detection of outliers
+JO  - e-Handbook of Statistical Methods, sec. 1.3.5.17
+UR  - https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
+Y2  - 2026/11/14
+ER  -
+
+TY  - JOUR
+ID  - 8
+AU  - Ahmad, Subutai
+AU  - Lavin, Alexander
+AU  - Purdy, Scott
+AU  - Agha, Zuha
+TI  - Unsupervised real-time anomaly detection for streaming data
+JO  - Neurocomputing
+PY  - 2017
+VL  - 262
+SP  - 134
+EP  - 147
+DO  - 10.1016/j.neucom.2017.04.070
+UR  - https://www.sciencedirect.com/science/article/pii/S0925231217309864
+Y2  - 2026/11/14
+N1  - Published NAB v1.0 Table 1 scores and Table 2 latency; NAB score is not accuracy.
+ER  -
+
+TY  - ELEC
+ID  - 9
+AU  - Oracle,
+TI  - SHOW STATUS statement
+JO  - MySQL 8.4 Reference Manual, sec. 15.7.7.37
+UR  - https://dev.mysql.com/doc/refman/8.4/en/show-status.html
+Y2  - 2026/11/14
+ER  -
+
+TY  - ELEC
+ID  - 10
+AU  - Oracle,
+TI  - Server status variables
+JO  - MySQL 8.4 Reference Manual, sec. 7.1.10
+UR  - https://dev.mysql.com/doc/refman/8.4/en/server-status-variables.html
+Y2  - 2026/11/14
+ER  -
+
+TY  - ELEC
+ID  - 11
+AU  - Numenta,
+TI  - Numenta Anomaly Benchmark (NAB)
+UR  - https://github.com/numenta/NAB
+Y2  - 2026/11/14
+ER  -
+
+TY  - JOUR
+ID  - 12
+AU  - Pedregosa, Fabian
+AU  - Varoquaux, Gaël
+AU  - Gramfort, Alexandre
+AU  - Michel, Vincent
+AU  - Thirion, Bertrand
+AU  - Grisel, Olivier
+AU  - Blondel, Mathieu
+AU  - Prettenhofer, Peter
+AU  - Weiss, Ron
+AU  - Dubourg, Vincent
+AU  - Vanderplas, Jake
+AU  - Passos, Alexandre
+AU  - Cournapeau, David
+AU  - Brucher, Matthieu
+AU  - Perrot, Matthieu
+AU  - Duchesnay, Édouard
+TI  - Scikit-learn: Machine learning in Python
+JO  - Journal of Machine Learning Research
+PY  - 2011
+VL  - 12
+IS  - 85
+SP  - 2825
+EP  - 2830
+UR  - https://jmlr.org/papers/v12/pedregosa11a.html
+Y2  - 2026/11/14
+ER  -
+

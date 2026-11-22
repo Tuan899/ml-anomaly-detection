@@ -1,0 +1,37 @@
+[1] V. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,” ACM Comput. Surv., vol. 41, no. 3, Art. no. 15, Jul. 2009, doi: 10.1145/1541880.1541882.
+Link: https://doi.org/10.1145/1541880.1541882
+
+[2] A. Blázquez-García, A. Conde, U. Mori, and J. A. Lozano, “A review on outlier/anomaly detection in time series data,” ACM Comput. Surv., vol. 54, no. 3, Art. no. 56, Apr. 2021, doi: 10.1145/3444690.
+Link: https://doi.org/10.1145/3444690
+
+[3] F. T. Liu, K. M. Ting, and Z.-H. Zhou, “Isolation forest,” in Proc. 8th IEEE Int. Conf. Data Mining, Pisa, Italy, 2008, pp. 413–422, doi: 10.1109/ICDM.2008.17.
+Link: https://doi.org/10.1109/ICDM.2008.17
+Bản PDF tác giả: https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf?q=isolation-forest
+
+[4] M. M. Breunig, H.-P. Kriegel, R. T. Ng, and J. Sander, “LOF: Identifying density-based local outliers,” ACM SIGMOD Rec., vol. 29, no. 2, pp. 93–104, 2000, doi: 10.1145/335191.335388.
+Link: https://doi.org/10.1145/335191.335388
+
+[5] scikit-learn developers, “Novelty and outlier detection,” scikit-learn documentation. Accessed: Nov. 14, 2026. [Online]. Available: https://scikit-learn.org/stable/modules/outlier_detection.html
+Link: https://scikit-learn.org/stable/modules/outlier_detection.html
+
+[6] B. Schölkopf, J. C. Platt, J. Shawe-Taylor, A. J. Smola, and R. C. Williamson, “Estimating the support of a high-dimensional distribution,” Neural Comput., vol. 13, no. 7, pp. 1443–1471, Jul. 2001, doi: 10.1162/089976601750264965.
+Link: https://doi.org/10.1162/089976601750264965
+
+[7] NIST/SEMATECH, “Detection of outliers,” e-Handbook of Statistical Methods, sec. 1.3.5.17. Accessed: Nov. 14, 2026. [Online]. Available: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
+Link: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
+
+[8] S. Ahmad, A. Lavin, S. Purdy, and Z. Agha, “Unsupervised real-time anomaly detection for streaming data,” Neurocomputing, vol. 262, pp. 134–147, Nov. 2017, doi: 10.1016/j.neucom.2017.04.070.
+Link: https://doi.org/10.1016/j.neucom.2017.04.070
+
+[9] Oracle, “SHOW STATUS statement,” MySQL 8.4 Reference Manual, sec. 15.7.7.37. Accessed: Nov. 14, 2026. [Online]. Available: https://dev.mysql.com/doc/refman/8.4/en/show-status.html
+Link: https://dev.mysql.com/doc/refman/8.4/en/show-status.html
+
+[10] Oracle, “Server status variables,” MySQL 8.4 Reference Manual, sec. 7.1.10. Accessed: Nov. 14, 2026. [Online]. Available: https://dev.mysql.com/doc/refman/8.4/en/server-status-variables.html
+Link: https://dev.mysql.com/doc/refman/8.4/en/server-status-variables.html
+
+[11] Numenta, “Numenta Anomaly Benchmark (NAB),” GitHub. Accessed: Nov. 14, 2026. [Online]. Available: https://github.com/numenta/NAB
+Link: https://github.com/numenta/NAB
+
+[12] F. Pedregosa et al., “Scikit-learn: Machine learning in Python,” J. Mach. Learn. Res., vol. 12, no. 85, pp. 2825–2830, 2011. [Online]. Available: https://jmlr.org/papers/v12/pedregosa11a.html
+Link: https://jmlr.org/papers/v12/pedregosa11a.html
+

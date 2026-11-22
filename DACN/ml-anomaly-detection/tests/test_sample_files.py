@@ -1,149 +1,147 @@
-"""Verify the delivered CSV practice files and their documented UI workflows.
+"""Check three visible practice files and CSV upload validation.
 
-Run with ``python -m unittest discover -s tests -p test_sample_files.py -v``.
-These synthetic files demonstrate validation and known anomalies; they do not
-establish performance on real measurements.
+Invalid upload fixtures are constructed in memory instead of filling data/.
 """
 
 from __future__ import annotations
 
-import csv
-import json
+from io import BytesIO
 from pathlib import Path
 import sys
 import unittest
 
+import numpy as np
 import pandas as pd
 from streamlit.testing.v1 import AppTest
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SAMPLE_DIR = PROJECT_ROOT / "data" / "kiem_thu"
-APP_PATH = PROJECT_ROOT / "frontend" / "app.py"
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-if str(Path(__file__).resolve().parent) not in sys.path:
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
+SAMPLE_DIR = PROJECT_ROOT / "data"
+APP_PATH = PROJECT_ROOT / "frontend" / "research_app.py"
+for directory in (PROJECT_ROOT, Path(__file__).resolve().parent):
+    if str(directory) not in sys.path:
+        sys.path.insert(0, str(directory))
 
+from frontend.demo_data import ANOMALOUS_SAMPLES, NORMAL_SAMPLE
 from http_transport import APITransport
-from src.data_prep import read_csv_frame
+from src.dbms_monitoring import MYSQL_METRICS, run_dbms_detection
 from src.pipeline import run_detection
 
 
-def load_contract() -> dict:
-    return json.loads((SAMPLE_DIR / "ket_qua_mong_doi.json").read_text(encoding="utf-8"))
+def practice_frame() -> pd.DataFrame:
+    """A single-metric fixture with two held-out spikes and recovery."""
+    return pd.DataFrame({
+        "timestamp": pd.date_range("2026-10-01 09:00", periods=10, freq="min"),
+        "value": [50., 52., 49., 51., 48., 53., 50., 300., 350., 52.],
+        "is_anomaly": [1] * 7 + [-1, -1, 1],
+    })
 
 
-def sample_run(filename: str, *, use_labels: bool = True):
-    settings = load_contract()["settings"].copy()
-    settings["label_col"] = "is_anomaly" if use_labels else None
-    return run_detection(SAMPLE_DIR / filename, **settings)
+def csv_bytes(frame: pd.DataFrame) -> bytes:
+    return frame.to_csv(index=False).encode("utf-8")
 
 
 class DeliveredSamplePipelineTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.contract = load_contract()
-        cls.expected = {item["file"]: item for item in cls.contract["files"]}
-
-    def test_delivered_files_have_the_documented_input_counts(self) -> None:
-        self.assertEqual(9, len(self.expected))
-        self.assertEqual(
-            set(self.expected), {path.name for path in SAMPLE_DIR.glob("*.csv")}
-        )
-        for filename, expected in self.expected.items():
+    def test_data_contains_only_three_ten_row_examples(self) -> None:
+        expected = {NORMAL_SAMPLE, *ANOMALOUS_SAMPLES.values()}
+        self.assertEqual(3, len(expected))
+        self.assertEqual(expected, {path.name for path in SAMPLE_DIR.iterdir()})
+        for filename in expected:
             with self.subTest(filename=filename):
-                with (SAMPLE_DIR / filename).open(encoding="utf-8-sig", newline="") as source:
-                    rows = list(csv.reader(source))
-                self.assertEqual(expected["input_rows"], len(rows) - 1)
+                frame = pd.read_csv(SAMPLE_DIR / filename)
+                self.assertEqual(10, len(frame))
+                times = pd.to_datetime(frame["timestamp"])
+                self.assertTrue(times.is_unique)
+                self.assertTrue(times.is_monotonic_increasing)
+                self.assertTrue(times.diff().dropna().eq(pd.Timedelta(minutes=1)).all())
+                self.assertTrue(np.isfinite(frame[list(MYSQL_METRICS)]).all().all())
+                self.assertTrue(frame["label"].isin([1, -1]).all())
 
-    def test_normal_sample_has_no_mad_alerts(self) -> None:
-        expected = self.expected["01_binh_thuong.csv"]
-        result = sample_run(expected["file"])
-        self.assertEqual(expected["clean_rows"], len(result.frame))
-        self.assertEqual(expected["train_rows"], result.metadata["train_rows"])
-        self.assertEqual(expected["test_rows"], result.metadata["test_rows"])
-        self.assertEqual(expected["mad_alerts"], result.predictions["mad_prediction"].eq(-1).sum())
-        self.assertTrue(result.frame["is_anomaly"].eq(1).all())
-        self.assertTrue(any("no anomalies" in item for item in result.metadata["warnings"]))
+    def test_normal_example_has_no_events_or_operational_alerts(self) -> None:
+        result = run_dbms_detection(SAMPLE_DIR / NORMAL_SAMPLE, label_col="label")
+        self.assertTrue(result.frame["label"].eq(1).all())
+        self.assertEqual(int(len(result.frame) * .7), result.metadata["train_rows"])
+        self.assertEqual(len(result.frame) - result.metadata["train_rows"], len(result.predictions))
+        for name in result.metadata["model_names"]:
+            self.assertTrue(result.predictions[f"{name}_prediction"].eq(1).all())
+        self.assertTrue(any("Small dataset" in item for item in result.metadata["warnings"]))
 
-    def test_labeled_sample_detects_exactly_the_documented_spikes(self) -> None:
-        expected = self.expected["02_bat_thuong_co_nhan.csv"]
-        raw = read_csv_frame(SAMPLE_DIR / expected["file"])
-        known = self.contract["known_anomalies"]
-        known_positions = [item["csv_line"] - 2 for item in known]
-        self.assertEqual([151, 172, 185], known_positions)
-        self.assertEqual(known_positions, raw.index[raw["is_anomaly"].eq(-1)].tolist())
-        for item in known:
-            with self.subTest(timestamp=item["timestamp"]):
-                position = item["csv_line"] - 2
-                self.assertEqual(position + 1, item["observation"])
-                self.assertEqual(pd.Timestamp(item["timestamp"]), pd.Timestamp(raw.iloc[position]["timestamp"]))
-                self.assertEqual(item["value"], raw.iloc[position]["value"])
+    def test_anomaly_examples_share_train_and_show_two_events_then_recovery(self) -> None:
+        normal = pd.read_csv(SAMPLE_DIR / NORMAL_SAMPLE)
+        for filename, changed in (
+            ("mysql_query_spike.csv", ["queries_per_second"]),
+            ("mysql_latency_spike.csv", ["response_time_ms", "slow_queries"]),
+        ):
+            with self.subTest(filename=filename):
+                frame = pd.read_csv(SAMPLE_DIR / filename)
+                pd.testing.assert_frame_equal(normal.iloc[:7], frame.iloc[:7])
+                self.assertEqual([7, 8], frame.index[frame["label"].eq(-1)].tolist())
+                self.assertEqual(["09:07", "09:08"], pd.to_datetime(frame.loc[frame["label"].eq(-1), "timestamp"]).dt.strftime("%H:%M").tolist())
+                pd.testing.assert_series_equal(normal.iloc[-1], frame.iloc[-1])
+                unchanged = [metric for metric in MYSQL_METRICS if metric not in changed]
+                pd.testing.assert_frame_equal(normal[unchanged], frame[unchanged])
+                for metric in changed:
+                    self.assertTrue(frame.loc[[7, 8], metric].gt(normal.loc[[7, 8], metric]).all())
+                result = run_dbms_detection(frame, label_col="label", model_names=["mad"])
+                truth = result.predictions["label"].eq(-1)
+                flags = result.predictions["mad_prediction"].eq(-1)
+                np.testing.assert_array_equal(truth, flags)
+                self.assertTrue(result.frame.iloc[:result.metadata["train_rows"]]["label"].eq(1).all())
 
-        result = sample_run(expected["file"])
-        self.assertEqual(expected["clean_rows"], len(result.frame))
-        self.assertEqual(expected["train_rows"], result.metadata["train_rows"])
-        self.assertEqual(expected["test_rows"], result.metadata["test_rows"])
-        self.assertTrue(result.frame.iloc[:expected["train_rows"]]["is_anomaly"].eq(1).all())
-        truth = result.predictions["is_anomaly"].eq(-1)
-        flagged = result.predictions["mad_prediction"].eq(-1)
-        self.assertEqual(expected["true_test_anomalies"], int(truth.sum()))
-        self.assertEqual(expected["mad_alerts"], int(flagged.sum()))
-        self.assertEqual(expected["mad_true_positives"], int((truth & flagged).sum()))
-        self.assertEqual(expected["mad_false_positives"], int((~truth & flagged).sum()))
-        self.assertEqual(expected["mad_false_negatives"], int((truth & ~flagged).sum()))
-        self.assertEqual({"precision": 1.0, "recall": 1.0, "f1": 1.0}, result.metrics["mad"])
 
-    def test_invalid_time_structure_and_split_samples_are_rejected(self) -> None:
-        for expected in self.expected.values():
-            if expected["outcome"] != "reject":
-                continue
-            with self.subTest(filename=expected["file"]):
-                with self.assertRaises(ValueError) as caught:
-                    sample_run(expected["file"], use_labels=False)
-                self.assertIn(expected["error_contains"], str(caught.exception))
+class InMemoryCSVValidationTests(unittest.TestCase):
+    def test_invalid_timestamps_duplicates_and_small_split_are_rejected(self) -> None:
+        invalid_time = practice_frame()
+        invalid_time["timestamp"] = invalid_time["timestamp"].astype(str)
+        invalid_time.loc[2, "timestamp"] = "not a date"
+        duplicate_time = practice_frame()
+        duplicate_time.loc[2, "timestamp"] = duplicate_time.loc[1, "timestamp"]
+        for frame, message in (
+            (invalid_time, "invalid timestamps"),
+            (duplicate_time, "Duplicate timestamps"),
+            (practice_frame().iloc[:3], "at least 3 training rows"),
+        ):
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
+                run_detection(BytesIO(csv_bytes(frame)), model_names=["mad"])
 
-    def test_bad_metric_values_are_counted_and_removed_before_splitting(self) -> None:
-        expected = self.expected["05_gia_tri_loi.csv"]
-        result = sample_run(expected["file"], use_labels=False)
-        self.assertEqual(expected["clean_rows"], len(result.frame))
-        self.assertEqual(expected["input_rows"], result.metadata["cleaning"]["input_rows"])
-        self.assertEqual(expected["dropped_rows"], result.metadata["cleaning"]["dropped_rows"])
-        self.assertEqual(expected["train_rows"], result.metadata["train_rows"])
-        self.assertEqual(expected["test_rows"], result.metadata["test_rows"])
+    def test_bad_metric_rows_are_removed_before_splitting(self) -> None:
+        frame = practice_frame()
+        frame.loc[[1, 3], "value"] = np.nan
+        result = run_detection(BytesIO(csv_bytes(frame)), model_names=["mad"])
+        self.assertEqual(2, result.metadata["cleaning"]["dropped_rows"])
+        self.assertEqual(len(frame) - 2, len(result.frame))
+        self.assertEqual(int(len(result.frame) * .7), result.metadata["train_rows"])
         self.assertTrue(any("removed before" in item for item in result.metadata["warnings"]))
 
-    def test_zero_one_labels_are_rejected_only_if_selected(self) -> None:
-        expected = self.expected["06_nhan_sai.csv"]
-        without_labels = sample_run(expected["file"], use_labels=False)
-        self.assertEqual({}, without_labels.metrics)
-        self.assertEqual(expected["input_rows"], len(without_labels.frame))
-        with self.assertRaises(ValueError) as caught:
-            sample_run(expected["file"])
-        self.assertIn(expected["error_contains"], str(caught.exception))
+    def test_zero_one_labels_are_rejected_only_when_selected(self) -> None:
+        frame = practice_frame()
+        frame["is_anomaly"] = frame["is_anomaly"].eq(-1).astype(int)
+        result = run_detection(BytesIO(csv_bytes(frame)), model_names=["mad"])
+        self.assertEqual({}, result.metrics)
+        self.assertEqual(len(frame), len(result.frame))
+        with self.assertRaisesRegex(ValueError, "explicit -1"):
+            run_detection(BytesIO(csv_bytes(frame)), label_col="is_anomaly", model_names=["mad"])
 
 
-class DeliveredSampleUploadTests(unittest.TestCase):
+class CSVUploadTests(unittest.TestCase):
     def setUp(self) -> None:
         self.transport = APITransport().__enter__()
         self.addCleanup(self.transport.__exit__, None, None, None)
-        self.app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+        self.app = AppTest.from_file(APP_PATH, default_timeout=60)
+        self.app.session_state["interface_mode"] = "Cơ bản"
+        self.app.run()
         self.assert_no_exception()
         self.app.radio(key="interface_mode").set_value("Nâng cao").run()
-        self.assert_no_exception()
         self.app.radio(key="workspace_mode").set_value("CSV một chỉ số / notebook NAB").run()
         self.assert_no_exception()
 
     def assert_no_exception(self) -> None:
         self.assertEqual([], [item.message for item in self.app.exception])
 
-    def upload(self, filename: str) -> None:
+    def upload(self, frame: pd.DataFrame) -> None:
         source = self.app.radio(key="data_source")
         source.set_value(source.options[1]).run()
-        self.app.file_uploader(key="csv_upload").set_value(
-            (filename, (SAMPLE_DIR / filename).read_bytes(), "text/csv")
-        ).run()
+        self.app.file_uploader(key="csv_upload").set_value(("practice.csv", csv_bytes(frame), "text/csv")).run()
         self.app.multiselect(key="selected_models").set_value(["mad"]).run()
         self.app.slider(key="train_fraction").set_value(70).run()
         self.app.slider(key="contamination").set_value(1.0).run()
@@ -160,8 +158,9 @@ class DeliveredSampleUploadTests(unittest.TestCase):
         self.app.button(key="run_analysis").click().run()
         self.assert_no_exception()
 
-    def test_labeled_spike_upload_shows_three_correct_alerts_and_exports(self) -> None:
-        self.upload("02_bat_thuong_co_nhan.csv")
+    def test_labeled_upload_reports_current_predictions_and_exports(self) -> None:
+        original = practice_frame()
+        self.upload(original)
         self.select_label()
         self.run_analysis()
         self.transport.mock_post.assert_called_once()
@@ -169,31 +168,35 @@ class DeliveredSampleUploadTests(unittest.TestCase):
         self.assertEqual("/detect", self.transport.requests[0].url.path)
         self.assertEqual([], list(self.app.error))
         result = self.app.session_state["detection_run"]
-        self.assertEqual(140, result.metadata["train_rows"])
-        self.assertEqual(60, result.metadata["test_rows"])
-        self.assertEqual(3, int(result.predictions["mad_prediction"].eq(-1).sum()))
+        self.assertEqual(int(len(original) * .7), result.metadata["train_rows"])
+        self.assertEqual(len(original) - result.metadata["train_rows"], result.metadata["test_rows"])
+        truth = result.predictions["is_anomaly"].eq(-1)
+        flagged = result.predictions["mad_prediction"].eq(-1)
+        np.testing.assert_array_equal(truth, flagged)
         confusion = next(item.value for item in self.app.dataframe if "Cảnh báo đúng" in item.value.columns)
-        self.assertEqual([3], confusion["Cảnh báo đúng"].tolist())
-        self.assertEqual([0], confusion["Cảnh báo nhầm"].tolist())
-        self.assertEqual([0], confusion["Bỏ sót"].tolist())
+        self.assertEqual([int((truth & flagged).sum())], confusion["Cảnh báo đúng"].tolist())
+        self.assertEqual([int((~truth & flagged).sum())], confusion["Cảnh báo nhầm"].tolist())
+        self.assertEqual([int((truth & ~flagged).sum())], confusion["Bỏ sót"].tolist())
         self.assertEqual(2, len(self.app.download_button))
 
-    def test_bad_value_upload_warns_about_six_removed_rows_then_runs(self) -> None:
-        self.upload("05_gia_tri_loi.csv")
+    def test_bad_value_upload_explains_cleaning_and_runs(self) -> None:
+        frame = practice_frame()
+        frame.loc[[1, 3], "value"] = np.nan
+        self.upload(frame)
         self.assertEqual([], list(self.app.error))
-        self.assertTrue(any("Có 6 dòng" in item.value for item in self.app.warning))
-        self.assertTrue(any("9 dòng đầu huấn luyện, 5 dòng cuối kiểm tra" in item.value for item in self.app.caption))
+        self.assertTrue(any("Có 2 dòng" in item.value for item in self.app.warning))
+        self.assertTrue(any("5 dòng đầu huấn luyện, 3 dòng cuối kiểm tra" in item.value for item in self.app.caption))
         self.run_analysis()
         result = self.app.session_state["detection_run"]
-        self.assertEqual(6, result.metadata["cleaning"]["dropped_rows"])
-        self.assertEqual(14, len(result.frame))
-        self.assertEqual(9, result.metadata["train_rows"])
-        self.assertEqual(5, result.metadata["test_rows"])
+        self.assertEqual(2, result.metadata["cleaning"]["dropped_rows"])
+        self.assertEqual(len(frame) - 2, len(result.frame))
         self.assertTrue(any("Đã loại dòng" in item.value for item in self.app.warning))
         self.assertEqual(2, len(self.app.download_button))
 
-    def test_zero_one_label_upload_runs_without_label_but_explains_opt_in_error(self) -> None:
-        self.upload("06_nhan_sai.csv")
+    def test_invalid_label_upload_explains_opt_in_error_and_removes_exports(self) -> None:
+        frame = practice_frame()
+        frame["is_anomaly"] = frame["is_anomaly"].eq(-1).astype(int)
+        self.upload(frame)
         self.run_analysis()
         self.assertEqual([], list(self.app.error))
         self.assertEqual({}, self.app.session_state["detection_run"].metrics)

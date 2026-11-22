@@ -1,0 +1,266 @@
+[
+  {
+    "page": 1,
+    "chars": 872,
+    "heading": "  | ỦY BAN NHÂN DÂN  | THÀNH PHỐ HỒ CHÍ MINH  | TRƯỜNG ĐẠI HỌC SÀI GÒN  | CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+    "images": 2
+  },
+  {
+    "page": 2,
+    "chars": 1672,
+    "heading": "​ | 2​ |   |   | NGHIÊN CỨU THUẬT TOÁN PHÁT HIỆN BẤT THƯỜNG TRONG HOẠT  | ĐỘNG CỦA HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU. ",
+    "images": 0
+  },
+  {
+    "page": 3,
+    "chars": 1842,
+    "heading": "​ | 3​ |   |   | Các chỉ số giám sát DBMS, chẳng hạn số truy vấn mỗi giây, thời gian thực thi  | truy vấn, mức",
+    "images": 0
+  },
+  {
+    "page": 4,
+    "chars": 2048,
+    "heading": "​ | 4​ |   | Các phương pháp phát hiện bất thường đã được nghiên cứu trong nhiều lĩnh vực.  | Những cách tiế",
+    "images": 0
+  },
+  {
+    "page": 5,
+    "chars": 1098,
+    "heading": "​ | 5​ |   | phát hiện bất thường của chúng để xác định hướng tiếp cận phù hợp với phạm vi  | nghiên cứu.  |  ",
+    "images": 0
+  },
+  {
+    "page": 6,
+    "chars": 1528,
+    "heading": "​ | 6​ |   | - Triển khai thực nghiệm: Cài đặt các thuật toán, điều chỉnh tham số (bao gồm kích  | thước cửa",
+    "images": 0
+  },
+  {
+    "page": 7,
+    "chars": 1567,
+    "heading": "​ | 7​ |   | với các bộ dữ liệu công khai phù hợp, chẳng hạn dữ liệu từ Kaggle hoặc UCI,  | nhằm phản ánh ho",
+    "images": 0
+  },
+  {
+    "page": 8,
+    "chars": 1324,
+    "heading": "​ | 8​ |   | - Chia dữ liệu huấn luyện và kiểm thử theo trình tự thời gian nhằm tránh rò rỉ dữ  | liệu.  | - C",
+    "images": 0
+  },
+  {
+    "page": 9,
+    "chars": 1102,
+    "heading": "​ | 9​ |   | Kết quả nghiên cứu có thể được sử dụng làm tài liệu tham khảo cho các nghiên cứu  | tiếp theo v",
+    "images": 0
+  },
+  {
+    "page": 10,
+    "chars": 844,
+    "heading": "​ | 10​ |   | 3-4  | Nghiên cứu chi tiết Isolation Forest, LOF,  | One-Class SVM; đặc điểm dữ liệu chuỗi thời ",
+    "images": 0
+  },
+  {
+    "page": 11,
+    "chars": 781,
+    "heading": "​ | 11​ |   |   | Mục 8. Dự kiến nội dung   | Chương 1: TỔNG QUAN VỀ VẤN ĐỀ  | 1.1. Lý do chọn đề tài  | 1.2. Vấn ",
+    "images": 0
+  },
+  {
+    "page": 12,
+    "chars": 709,
+    "heading": "​ | 12​ |   |   3.1.1. Mô tả bộ dữ liệu (dữ liệu giả lập từ MySQL, dữ liệu công khai)  |   3.1.2. Tiền xử lý",
+    "images": 0
+  },
+  {
+    "page": 13,
+    "chars": 1630,
+    "heading": "​ | 13​ |   |   | 9. Danh mục tài liệu tham khảo  | [1] V. Chandola, A. Banerjee, and V. Kumar, \"Anomaly detec",
+    "images": 0
+  },
+  {
+    "page": 14,
+    "chars": 623,
+    "heading": "​ | 14​ |   | dataset: Numenta, \"Numenta Anomaly Benchmark (NAB),\" GitHub repository. [Online].  | Available",
+    "images": 0
+  },
+  {
+    "page": 15,
+    "chars": 28,
+    "heading": "​ | 15​ |   |   |   |   |   |   |   |   |   |   |   | ",
+    "images": 0
+  },
+  {
+    "page": 16,
+    "chars": 635,
+    "heading": "  |   |   |                                            |                                           UỶ BAN NH",
+    "images": 2
+  },
+  {
+    "page": 17,
+    "chars": 1936,
+    "heading": "  | CHƯƠNG 1. TỔNG QUAN VỀ VẤN ĐỀ  | 1.1. Lý do chọn đề tài  |   | Trong bối cảnh chuyển đổi số, hệ quản trị",
+    "images": 0
+  },
+  {
+    "page": 18,
+    "chars": 1761,
+    "heading": "  | 1.2. Vấn đề nghiên cứu  | Đầu vào của bài toán là tập quan sát X = {x₁, x₂, …, x\u0000} có dấu thời gian.",
+    "images": 0
+  },
+  {
+    "page": 19,
+    "chars": 1692,
+    "heading": "  | 1.3.2. Câu hỏi nghiên cứu  | RQ1: Với cùng tập dữ liệu hoạt động DBMS, sự khác biệt về Precision, Re",
+    "images": 0
+  },
+  {
+    "page": 20,
+    "chars": 1461,
+    "heading": "  | CHƯƠNG 2. CƠ SỞ LÝ THUYẾT  | 2.1. Tổng quan về phát hiện bất thường trên chuỗi thời gian  | 2.1.1. Khá",
+    "images": 0
+  },
+  {
+    "page": 21,
+    "chars": 1863,
+    "heading": "  | Khái niệm “thay đổi” cần tách biệt khỏi “bất thường”. Nếu số truy vấn tăng từ 50  | lên 51, hệ thống",
+    "images": 0
+  },
+  {
+    "page": 22,
+    "chars": 1720,
+    "heading": "  | khỏi các điểm còn lại sau ít phép chia hơn, tương ứng đường đi trên cây ngắn hơn  | [3].  | Với mỗi câ",
+    "images": 0
+  },
+  {
+    "page": 23,
+    "chars": 1815,
+    "heading": "  | 2.2.3. One-Class Support Vector Machine (One-Class SVM)  | One-Class SVM học miền quyết định mô tả d",
+    "images": 0
+  },
+  {
+    "page": 24,
+    "chars": 1290,
+    "heading": "  | tách rõ nên phù hợp kiểm tra chức năng, chưa đủ để kết luận mô hình nào tốt hơn  | trên tải MySQL th",
+    "images": 0
+  },
+  {
+    "page": 25,
+    "chars": 1307,
+    "heading": "  |   | Precision = TP / (TP + FP) (2.3)  |   | Recall = TP / (TP + FN) (2.4)  |   | F1 = 2 × Precision × Recall",
+    "images": 0
+  },
+  {
+    "page": 26,
+    "chars": 1259,
+    "heading": "  | Bộ dữ liệu  | AUC IF  | AUC LOF IF (s)  | LOF (s)  | Mammography  | 0,86  | 0,67  | 0,66  | 14647,00  | Annthyroid  | ",
+    "images": 0
+  },
+  {
+    "page": 27,
+    "chars": 1175,
+    "heading": "  | CHƯƠNG 3. DỮ LIỆU VÀ PHƯƠNG PHÁP THỰC NGHIỆM  |   | 3.1. Dữ liệu thực nghiệm  |   | 3.1.1. Mô tả bộ dữ liệ",
+    "images": 0
+  },
+  {
+    "page": 28,
+    "chars": 1306,
+    "heading": "  | queries_per_second  | Thông lượng truy vấn  | QPS; thu thật:  | ΔQuestions/Δt  | connections  | Kết nối hiện",
+    "images": 0
+  },
+  {
+    "page": 29,
+    "chars": 1448,
+    "heading": "  | Pipeline MySQL kiểm tra đủ năm chỉ số, giá trị hữu hạn không âm, thời gian hợp  | lệ và duy nhất rồi",
+    "images": 0
+  },
+  {
+    "page": 30,
+    "chars": 1505,
+    "heading": "  | Máy đo có CPU Intel Core i7-11800H @ 2,30 GHz, 16 bộ xử lý logic; hệ điều  | hành trả tổng RAM vật l",
+    "images": 0
+  },
+  {
+    "page": 31,
+    "chars": 1421,
+    "heading": "  | K4 – Suy giảm hiệu  | năng  | mysql_latency_spike.csv; latency × 9 + 90,  | slow_queries + 8  | 43 điểm, 2",
+    "images": 0
+  },
+  {
+    "page": 32,
+    "chars": 491,
+    "heading": "  | Chức năng so sánh hai bộ dữ liệu dùng chung mô hình và bộ chuẩn hóa học một  | lần từ tiền tố của bộ",
+    "images": 1
+  },
+  {
+    "page": 33,
+    "chars": 81,
+    "heading": "  |   | Hình 3.2. Bốn bộ dữ liệu tổng hợp, mốc chia train/test và nhãn sự kiện.  |   |   | ",
+    "images": 1
+  },
+  {
+    "page": 34,
+    "chars": 1213,
+    "heading": "  | CHƯƠNG 4. KẾT QUẢ THỰC NGHIỆM VÀ ĐÁNH GIÁ  |   | Kết quả trong chương này được tính bằng scripts/evalu",
+    "images": 0
+  },
+  {
+    "page": 35,
+    "chars": 462,
+    "heading": "  | Confusion matrix giữ thứ tự nhãn [1, −1], hàng là nhãn thật và cột là dự đoán, do  | đó ma trận bằng",
+    "images": 1
+  },
+  {
+    "page": 36,
+    "chars": 773,
+    "heading": "  |   | Hình 4.2. Giá trị QPS, nhãn và cảnh báo của bốn phương pháp trên cùng 432 điểm test K2.  |   | 4.2. ",
+    "images": 1
+  },
+  {
+    "page": 37,
+    "chars": 1522,
+    "heading": "  | xác định vì không có cảnh báo; để tương thích phần mềm, giá trị 0 theo quy ước  | được dùng khi lấy ",
+    "images": 0
+  },
+  {
+    "page": 38,
+    "chars": 1107,
+    "heading": "  | hỗ trợ quyết định của quản trị viên thay vì tự động coi mọi điểm ngoại lai là cuộc  | tấn công.  |   | T",
+    "images": 0
+  },
+  {
+    "page": 39,
+    "chars": 1293,
+    "heading": "  | CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN  |   | 5.1. Kết luận  |   | Đề tài đã triển khai được nguyên mẫu ph",
+    "images": 0
+  },
+  {
+    "page": 40,
+    "chars": 948,
+    "heading": "  | Ưu tiên tiếp theo là thu chuỗi số đo MySQL thật trong nhiều ngày với tài khoản chỉ  | đọc, TLS và lị",
+    "images": 0
+  },
+  {
+    "page": 41,
+    "chars": 1999,
+    "heading": "  | TÀI LIỆU THAM KHẢO  |   | [1]​ | V. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,” ",
+    "images": 0
+  },
+  {
+    "page": 42,
+    "chars": 344,
+    "heading": "  | [11]​ Numenta, “Numenta Anomaly Benchmark (NAB),” GitHub. Accessed: Nov.  | 14, 2026. [Online]. Avai",
+    "images": 0
+  },
+  {
+    "page": 43,
+    "chars": 1193,
+    "heading": "  | PHỤ LỤC A. KỊCH BẢN DEMO ANOMALY LAB  | Bước 1. Chạy backend FastAPI và frontend Streamlit theo READ",
+    "images": 0
+  },
+  {
+    "page": 44,
+    "chars": 891,
+    "heading": "  | PHỤ LỤC B. TRUY VẤN MINH HỌA THU THẬP CHỈ SỐ MYSQL  |   | Collector thực tế đọc các bộ đếm toàn cục và",
+    "images": 0
+  }
+]
