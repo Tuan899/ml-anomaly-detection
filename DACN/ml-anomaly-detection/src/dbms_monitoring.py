@@ -135,17 +135,21 @@ def _add_indicators(predictions: pd.DataFrame, baselines: dict, threshold: float
     material = np.column_stack(deviations)
     predictions["activity_deviation"] = material.any(axis=1)
     predictions["max_deviation_score"] = np.column_stack(score_matrix).max(axis=1)
-    explanations = []
-    for index, row in predictions.iterrows():
+    # Most observations stay inside the reference range. Avoid constructing a
+    # pandas Series for every row just to repeat the same no-deviation message.
+    explanations = ["No metric exceeds the documented training tolerance."] * len(predictions)
+    values = predictions[list(MYSQL_METRICS)].to_numpy()
+    for index in np.flatnonzero(material.any(axis=1)):
         evidence = []
-        for column_index, metric in enumerate(MYSQL_METRICS):
-            if material[index, column_index]:
-                baseline = baselines[metric]
-                evidence.append(
-                    f"{metric}: actual={row[metric]:.6g}, train_median={baseline['median']:.6g}, "
-                    f"delta={row[f'{metric}_deviation']:+.6g}, allowed_deviation={baseline['allowed_deviation']:.6g}"
-                )
-        explanations.append("; ".join(evidence) if evidence else "No metric exceeds the documented training tolerance.")
+        for column_index in np.flatnonzero(material[index]):
+            metric = MYSQL_METRICS[column_index]
+            baseline = baselines[metric]
+            actual = values[index, column_index]
+            evidence.append(
+                f"{metric}: actual={actual:.6g}, train_median={baseline['median']:.6g}, "
+                f"delta={actual - baseline['median']:+.6g}, allowed_deviation={baseline['allowed_deviation']:.6g}"
+            )
+        explanations[index] = "; ".join(evidence)
     predictions["suspected_indicators"] = explanations
     return material.any(axis=1)
 

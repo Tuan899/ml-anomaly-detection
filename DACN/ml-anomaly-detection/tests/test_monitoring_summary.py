@@ -108,7 +108,7 @@ class MonitoringSummaryTests(unittest.TestCase):
         self.assertEqual(0, summary["high_point_count"])
         self.assertTrue(summary["notable"]["Mức cảnh báo"].eq("Cần chú ý").all())
         self.assertIn("10%", summary["severity_rule"])
-        self.assertIn("không phải giới hạn MySQL", summary["severity_rule"])
+        self.assertIn("không phải giới hạn CSDL", summary["severity_rule"])
 
     def test_model_score_is_from_a_detecting_model_not_average_or_largest_other_score(self):
         run = run_fixture(models=("lof", "mad"))
@@ -238,6 +238,26 @@ class MonitoringChartsAndReportTests(unittest.TestCase):
         self.assertIn("[[TN, FP], [FN, TP]]", report)
         self.assertNotIn("0.999", report)
         self.assertIn("Dự đoán gốc", report)
+
+    def test_explicit_source_context_overrides_filename_for_provenance(self):
+        run = run_fixture()
+        run.metadata["source_kind"] = "csv"
+        report = build_report_markdown(run, source_name="mysql_normal.csv").decode("utf-8-sig")
+        self.assertNotIn("Dữ liệu mẫu tổng hợp", report)
+        self.assertIn("Nguồn và nhãn do người dùng cung cấp", report)
+        run.metadata["source_kind"] = "mysql_live"
+        report = build_report_markdown(run, source_name="demo_server").decode("utf-8-sig")
+        self.assertNotIn("Dữ liệu mẫu tổng hợp", report)
+        run.metadata["source_kind"] = "synthetic"
+        report = build_report_markdown(run, source_name="Hoạt động tham chiếu").decode("utf-8-sig")
+        self.assertIn("Dữ liệu mẫu tổng hợp", report)
+
+    def test_all_three_sample_filenames_have_fallback_synthetic_provenance(self):
+        run = run_fixture()
+        for name in ("mysql_normal.csv", "mysql_query_spike.csv", "mysql_latency_spike.csv"):
+            with self.subTest(name=name):
+                report = build_report_markdown(run, source_name="data/" + name).decode("utf-8-sig")
+                self.assertIn("Dữ liệu mẫu tổng hợp", report)
 
     def test_comparison_report_distinguishes_shared_training_from_excluded_prefix(self):
         run = run_fixture()

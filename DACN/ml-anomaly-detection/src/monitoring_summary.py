@@ -36,7 +36,7 @@ SEVERITY_RULE = (
     "tăng từ mức tham chiếu bằng 0. Toàn bộ lần phân tích có mức Cảnh báo cao "
     "nếu có điểm như trên hoặc ít nhất 10% bản ghi kiểm tra được cảnh báo. "
     "Có cảnh báo còn lại là Cần chú ý; không có cảnh báo là Bình thường. "
-    "Đây là quy ước vận hành minh họa, không phải giới hạn MySQL hay SLA "
+    "Đây là quy ước vận hành minh họa, không phải giới hạn CSDL hay SLA "
     "đã được xác nhận; bản thân quy tắc này không tạo dự đoán mô hình."
 )
 NOTABLE_COLUMNS = [
@@ -203,7 +203,7 @@ def summarize_run(run: DetectionRun) -> dict:
     if {"response_time_ms", "slow_queries"} & material_metrics:
         next_checks.append("Đối chiếu slow query log, kế hoạch thực thi, khóa chờ và tải CPU/I/O trong cùng khoảng thời gian.")
     if "connection_errors" in material_metrics:
-        next_checks.append("Đối chiếu log lỗi MySQL, giới hạn kết nối và tình trạng mạng; số lỗi kết nối chưa xác định được nguồn lỗi.")
+        next_checks.append("Đối chiếu log lỗi CSDL, giới hạn kết nối và tình trạng mạng; số lỗi kết nối chưa xác định được nguồn lỗi.")
     if not next_checks:
         next_checks.append("Tiếp tục thu thập số liệu và đối chiếu log vận hành; kiểm tra lại khoảng học có đại diện cho hoạt động bình thường hay không.")
     return {

@@ -13,6 +13,8 @@ trên thanh bên; luồng nghiên cứu và dữ liệu kiểm thử vẫn đư�
 
 Mở PowerShell tại thư mục `ml-anomaly-detection`. Dùng Python 3.10 trở lên:
 
+Cách nhanh nhất khi đã có thư viện là chạy `.\CHAY_UNG_DUNG.bat`. Trình chạy tự bật backend và giao diện. Các lệnh dưới đây dành cho cài đặt lần đầu và chạy riêng từng dịch vụ.
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
@@ -36,32 +38,34 @@ Mô hình chạy ở FastAPI. Nếu backend tắt hoặc lỗi, giao diện báo
 
 ## 2. Demo bộ hoạt động bình thường
 
-1. Giữ chế độ **Giám sát hệ quản trị CSDL MySQL**, chọn **Dữ liệu kiểm thử MySQL → Hoạt động bình thường**.
-2. Mở **Xem trước và tải dữ liệu đầu vào**. Có thể tải CSV rồi thử lại qua **Tải CSV MySQL** để minh chứng luồng nhập tệp.
+1. Giữ chế độ **Giám sát hệ quản trị CSDL**, chọn **Dữ liệu kiểm thử → Hoạt động bình thường**.
+2. Mở **Xem trước và tải dữ liệu đầu vào**. Có thể tải CSV rồi thử lại qua **Tải CSV** để minh chứng luồng nhập tệp.
 3. Chọn thời gian `timestamp`, nhãn `label`, đủ bốn thuật toán; train **70%**, tỷ lệ bất thường dự kiến **1%**, bật lọc dao động, ngưỡng **3,5**.
 4. Bấm **Chạy phát hiện**. Đọc trạng thái theo cấu hình hiện tại, biểu đồ từng chỉ số và bảng so sánh số cảnh báo gốc/sau lọc.
 5. Trong tab **Đánh giá**, xem số **FP** trên bộ bình thường. Không có bất thường thật nên Recall/F1 không đo được khả năng phát hiện; giá trị 0 theo quy ước không có nghĩa mô hình bỏ sót sự cố.
 
-Tệp `data/mysql_normal.csv` có 1.440 mẫu cách nhau một phút, dao động chu kỳ và nhiễu tự nhiên được tạo với seed cố định. Không có sự kiện bất thường được chèn. Tên `normal` chỉ mô tả nhãn thiết kế, không ép mô hình phải trả kết quả bình thường.
+Tệp `data/mysql_normal.csv` có **10 mẫu** cách nhau một phút, từ **09:00 đến 09:09 UTC ngày 01/10/2026**. Giá trị được chọn cố định để dễ đọc; không có sự kiện bất thường được chèn. Mặc định học **7 dòng đầu**, kiểm tra **3 dòng cuối**. Tên `normal` mô tả nhãn thiết kế, không ép mô hình trả kết quả bình thường. Đây là bộ thử chức năng ngắn, chưa đủ để đánh giá chất lượng mô hình thực tế.
 
 ## 3. Demo bộ có bất thường
 
-1. Chuyển sang **Hoạt động bất thường**. Kết quả cũ được ẩn cho đến khi chạy lại.
-2. Giữ nguyên cấu hình và bấm **Chạy phát hiện**. Mô hình học 1.008 mẫu đầu, dự đoán 432 mẫu cuối. Hai bộ có cùng phần nền huấn luyện bình thường; 146 mẫu sự kiện chỉ xuất hiện trong phần kiểm tra.
+1. Chuyển sang **Hoạt động bất thường**, giữ **Tăng lượng truy vấn** hoặc chọn **Phản hồi chậm**. Kết quả cũ được ẩn cho đến khi chạy lại.
+2. Giữ nguyên cấu hình và bấm **Chạy phát hiện**. Mô hình học 7 mẫu đầu, dự đoán 3 mẫu cuối. Ba bộ có cùng nền huấn luyện bình thường; sự kiện chỉ được chèn ở dòng 8–9, dòng 10 trở lại bình thường.
 3. Trong **Tổng quan**, lần lượt chọn bốn thuật toán và các chỉ số. Rê chuột tại điểm × đỏ để đọc cả năm giá trị thực tế, kể cả khi chỉ số đang vẽ chưa tăng.
 4. Trong **Chi tiết**, chọn thời điểm cảnh báo. Đọc giá trị thực tế, độ lệch so với trung vị train và chỉ số vượt ngưỡng. Đối chiếu thời gian với các sự kiện sau:
 
-| Tình huống tổng hợp | Thời gian UTC ngày 01/10/2026 | Chỉ số được tác động |
+| Tệp / tình huống tổng hợp | Thời gian UTC ngày 01/10/2026 | Chỉ số được tác động |
 |---|---|---|
-| `query_spike` | 17:31–18:04 | QPS |
-| `connection_spike` | 18:57–19:31 | Kết nối |
-| `latency_spike` | 20:24–20:57 | Thời gian phản hồi |
-| `combined_pressure` | 21:59–22:41 | Cả năm chỉ số |
+| `mysql_query_spike.csv` | 09:07–09:08 (dòng 8–9) | QPS 300/350 thay cho 51/49 |
+| `mysql_latency_spike.csv` | 09:07–09:08 (dòng 8–9) | Phản hồi 180/220 ms, truy vấn chậm 8/10 |
 
 5. Mở **Đánh giá**, so sánh **Cảnh báo sau lọc** với **Dự đoán mô hình gốc**. Đọc Precision, Recall, F1-score và TP/FP/FN/TN cùng confusion matrix cho từng thuật toán. Thuật toán bỏ sót vẫn phải hiển thị đúng FN; không thay nhãn hay điều chỉnh kết quả để có chỉ số đẹp.
-6. Tải dự đoán CSV và kết quả/cấu hình JSON. CSV có toàn bộ 432 mẫu test, giá trị thật, dự đoán gốc, cảnh báo sau lọc và bằng chứng; không bị giới hạn theo bộ lọc bảng.
+6. Tải dự đoán CSV và kết quả/cấu hình JSON. CSV có toàn bộ 3 mẫu test, giá trị thật, dự đoán gốc, cảnh báo sau lọc và bằng chứng; không bị giới hạn theo bộ lọc bảng.
 
-Hai tệp là **dữ liệu tổng hợp kiểm thử**, không phải số đo từ máy chủ thật. Các đợt tăng được cố ý tách rõ để kiểm tra luồng hoạt động; điểm tốt trên dữ liệu này chưa chứng minh khả năng tổng quát. Khoảng thời gian và nhãn được ghi trong `data/mysql_demo_manifest.json`; không suy ra từ dự đoán của mô hình.
+Các tệp là **dữ liệu tổng hợp kiểm thử**, không phải số đo từ máy chủ thật. Các đợt tăng được cố ý tách rõ để kiểm tra luồng hoạt động; điểm tốt trên dữ liệu này chưa chứng minh khả năng tổng quát. Khoảng thời gian, phép biến đổi và hash được ghi trong `docs/mysql_datasets_manifest.json`; không suy ra từ dự đoán của mô hình.
+
+Thư mục `data` chỉ chứa ba CSV: bộ bình thường, bộ tăng truy vấn và bộ phản hồi
+chậm. Cơ bản mở đủ 10 dòng ngay trong bảng xem trước. Mẫu tổng hợp nhỏ này
+không thay thế việc thu lịch sử đủ dài từ một máy chủ MySQL thực.
 
 Biểu đồ mặc định chỉ hiện **Giai đoạn kiểm tra** để dễ đọc. Đường xanh là giá trị đo thực tế; vùng xanh lá là khoảng tham chiếu đã học từ train, không phải khoảng tin cậy hoặc ngưỡng quyết định riêng của thuật toán. Dòng trạng thái ghi rõ thuật toán đang chọn có bao nhiêu cảnh báo; không có dấu đỏ nghĩa là thuật toán đó chưa cảnh báo trên phần kiểm tra. Chọn **Toàn bộ dữ liệu** để xem thêm giai đoạn học và vạch chia có ghi tên. Bật **Hiện nhãn kiểm thử** khi muốn đối chiếu với sự kiện đã gắn nhãn.
 
@@ -95,9 +99,9 @@ timestamp,queries_per_second,connections,response_time_ms,slow_queries,connectio
 
 Ví dụ trên chỉ minh họa cấu trúc; cần nhiều mẫu hơn để chạy. Các số phải hữu hạn, không âm; timestamp duy nhất, hợp lệ. Timestamp không có múi giờ được hiểu là UTC; dữ liệu được sắp xếp trước khi chia. Chế độ MySQL từ chối dữ liệu lỗi thay vì tự điền 0 hoặc bỏ hàng âm thầm. Giới hạn CSV là 10 MiB. Giữ chu kỳ lấy mẫu nhất quán và dùng số phát sinh trong khoảng cho hai cột sự kiện, không dùng bộ đếm tích lũy từ lúc server khởi động.
 
-Để demo trực tiếp, chọn **Kết nối MySQL**, nhập tài khoản giám sát, thu mẫu rồi bấm **Chạy phát hiện**. Mặc định thu 60 mẫu với khoảng 1 giây; nên thu nhiều mẫu/chu kỳ đại diện hơn để nghiên cứu chất lượng. Chuẩn bị tài khoản ít quyền, TLS và hiểu cách đo trong [MYSQL_SETUP.md](MYSQL_SETUP.md).
+Để phân tích số liệu từ máy chủ thật, thu dữ liệu bằng công cụ bên ngoài hoặc gọi riêng mô-đun thu thập rồi lưu thành CSV. Chọn **Tải CSV**, tải tệp, xem trước và bấm **Chạy phát hiện**. Nên thu nhiều mẫu/chu kỳ đại diện để nghiên cứu chất lượng. Chuẩn bị tài khoản ít quyền, TLS và xem cách thu mẫu bằng Python trong [MYSQL_SETUP.md](MYSQL_SETUP.md).
 
-Thu trực tiếp chỉ đọc `SHOW GLOBAL STATUS` và thăm dò `SELECT 1`; không truy cập bảng nghiệp vụ. Độ trễ là thời gian khứ hồi probe, không phải trung bình mọi truy vấn. Dữ liệu thật không tự có nhãn: giao diện không tạo Precision/Recall/F1 hay confusion matrix nếu chưa có nhãn. Đây là thu theo đợt để phân tích; chưa phải dịch vụ cảnh báo chạy liên tục.
+Mô-đun thu thập chỉ đọc `SHOW GLOBAL STATUS` và thăm dò `SELECT 1`; không truy cập bảng nghiệp vụ. Độ trễ là thời gian khứ hồi probe, không phải trung bình mọi truy vấn. Dữ liệu thật không tự có nhãn: giao diện không tạo Precision/Recall/F1 hay confusion matrix nếu chưa có nhãn. Đây là thu theo đợt rồi phân tích CSV; chưa phải dịch vụ cảnh báo chạy liên tục.
 
 ## 6. Tái lập và đánh giá bằng lệnh
 
@@ -109,12 +113,12 @@ Chạy từ thư mục dự án:
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Lệnh đầu tái tạo đúng hai CSV và manifest bằng seed `20261107`. Lệnh thứ hai thực sự huấn luyện mô hình và ghi `reports/mysql_demo/comparison.csv`, `evaluation.json` cùng dự đoán từng tệp. Không có bảng điểm được chép sẵn. Báo cáo ghi hash tệp, phiên bản thư viện, tham số và thời điểm chạy để đối chiếu. Khi thay seed hoặc tham số, phải chạy lại và báo cáo kết quả mới.
+Lệnh đầu tái tạo ba CSV, mỗi tệp 10 dòng, và `docs/mysql_datasets_manifest.json` từ các giá trị cố định có thể đọc trong mã nguồn; không khớp mô hình để chọn dữ liệu. Lệnh thứ hai thực sự huấn luyện mô hình và ghi `reports/mysql_demo/comparison.csv`, `evaluation.json` cùng dự đoán từng tệp. Không có bảng điểm được chép sẵn. Báo cáo ghi hash tệp, phiên bản thư viện, tham số và thời điểm chạy để đối chiếu. Khi đổi dữ liệu hoặc tham số, phải chạy lại và báo cáo kết quả mới.
 
 API vẫn giữ chế độ CSV một chỉ số và notebook cũ. Ví dụ thêm chế độ nghiên cứu MySQL:
 
 ```powershell
-curl.exe -X POST "http://127.0.0.1:8000/detect?analysis_mode=dbms&value_col=queries_per_second&label_col=label&include_context=true" -F "file=@data/mysql_anomalous.csv"
+curl.exe -X POST "http://127.0.0.1:8000/detect?analysis_mode=dbms&value_col=queries_per_second&label_col=label&include_context=true" -F "file=@data/mysql_query_spike.csv"
 ```
 
 Các tham số mới: `analysis_mode=dbms`, `noise_guard=true/false`, `deviation_threshold=3.5` (API cho phép 1–10). `value_col` chọn chỉ số đại diện; mô hình vẫn dùng đủ năm chỉ số. Nhãn chỉ được dùng khi chỉ định `label_col`. `*_raw_prediction` và `*_score` giữ nguyên kết quả mô hình; `*_prediction` là cảnh báo vận hành. Metadata chứa cả hai nhóm kết quả đánh giá và confusion matrix.

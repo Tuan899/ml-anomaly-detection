@@ -1,0 +1,138 @@
+{
+  "provenance": "Synthetic teaching examples, not measured MySQL telemetry.",
+  "generator": "scripts/generate_algorithm_datasets.py",
+  "generation_policy": "Fixed independent seeds and predefined incidents; no estimator fitting or score-based selection.",
+  "columns": [
+    "timestamp",
+    "queries_per_second",
+    "connections",
+    "response_time_ms",
+    "slow_queries",
+    "connection_errors",
+    "label",
+    "scenario"
+  ],
+  "sampling_interval_seconds": 60,
+  "start_timestamp": "2026-11-01T00:00:00+07:00",
+  "timezone": "UTC+07:00 (Asia/Ho_Chi_Minh)",
+  "recommended_configuration": {
+    "analysis_mode": "dbms",
+    "label_col": "label",
+    "train_fraction": 0.7,
+    "split_index": 700,
+    "contamination": 0.01,
+    "include_time": false,
+    "noise_guard": false
+  },
+  "label_policy": {
+    "1": "generated normal operating pattern",
+    "-1": "explicitly injected incident"
+  },
+  "anomaly_indices_zero_based": [
+    720,
+    735,
+    750,
+    775,
+    790,
+    810,
+    835,
+    850,
+    875,
+    890,
+    910,
+    935,
+    950,
+    975,
+    990
+  ],
+  "anomaly_record_numbers_one_based": [
+    721,
+    736,
+    751,
+    776,
+    791,
+    811,
+    836,
+    851,
+    876,
+    891,
+    911,
+    936,
+    951,
+    976,
+    991
+  ],
+  "features": [
+    "queries_per_second",
+    "connections",
+    "response_time_ms",
+    "slow_queries",
+    "connection_errors"
+  ],
+  "excluded_from_features": [
+    "timestamp",
+    "label",
+    "scenario"
+  ],
+  "metric_definitions": {
+    "queries_per_second": "queries/second during the one-minute sampling interval",
+    "connections": "current active client connections (integer gauge)",
+    "response_time_ms": "synthetic probe round-trip latency in milliseconds",
+    "slow_queries": "slow-query count during this interval, not a cumulative counter",
+    "connection_errors": "failed-connection count during this interval, not a cumulative counter"
+  },
+  "scenarios": {
+    "MAD.csv": "Stable baseline with isolated high and low QPS values; other metrics unchanged.",
+    "Isolation_Forest.csv": "Three normal load profiles and rare simultaneous extremes in five metrics.",
+    "LOF.csv": "Dense and sparse normal clusters; incidents lie just outside the dense cluster, within overall marginal ranges.",
+    "One_Class_SVM.csv": "QPS and connections follow latent load t; latency follows 15+3*t^2. Incidents combine middle QPS/connections with high latency."
+  },
+  "limitations": [
+    "Filenames identify intended teaching concepts, not exclusive algorithm compatibility or guaranteed superiority.",
+    "All four algorithms can be evaluated on every file using the same held-out rows.",
+    "Synthetic results cannot establish accuracy on production workloads.",
+    "Use all five metrics in DBMS mode; a one-metric CSV run loses relational information.",
+    "The operational noise guard may suppress local and relational anomalies; disable it to examine raw algorithms.",
+    "One percent contamination/nu does not guarantee one percent test alerts. Fifteen injected events occupy five percent of test rows.",
+    "Event counts intentionally remain zero in the MAD, LOF and One-Class SVM baselines."
+  ],
+  "files": {
+    "MAD.csv": {
+      "seed": 20261121,
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "train_anomalies": 0,
+      "test_anomalies": 15,
+      "sha256": "e11392b1bdb27a0305a4cd946d6241eff1050f1baace51da508c0b5df71d829c"
+    },
+    "Isolation_Forest.csv": {
+      "seed": 20261122,
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "train_anomalies": 0,
+      "test_anomalies": 15,
+      "sha256": "35b520ec8c4f15201ecf59036841876661a9cb0bba09578644f8e835dc88aeb1"
+    },
+    "LOF.csv": {
+      "seed": 20261123,
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "train_anomalies": 0,
+      "test_anomalies": 15,
+      "sha256": "84ab048225161db3bb6e3b369eef11bf06da465ba68d71a60515e4aefe41ed06"
+    },
+    "One_Class_SVM.csv": {
+      "seed": 20261124,
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "train_anomalies": 0,
+      "test_anomalies": 15,
+      "sha256": "e30f5e4340a0446d382f7c786cdbfe0f777df4ff3659ccebc0b4d1a65d5f3e48"
+    }
+  },
+  "algorithm_reference": "https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_anomaly_comparison.html"
+}

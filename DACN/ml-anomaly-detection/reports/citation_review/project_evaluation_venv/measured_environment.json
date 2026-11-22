@@ -1,0 +1,19 @@
+{
+  "os_platform": "Windows-10-10.0.26300-SP0",
+  "cpu_processor_identifier": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+  "cpu_model_registry": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
+  "logical_cpus": 16,
+  "total_physical_memory_bytes": 8276938752,
+  "physical_memory_gib": 7.7085,
+  "hardware_measurement": "platform.processor, os.cpu_count, registry ProcessorNameString, Windows GlobalMemoryStatusEx. CIM denied; no escalation.",
+  "streamlit": "1.65.0",
+  "fastapi": "0.162.0",
+  "pymysql": "1.2.3",
+  "numpy": "2.2.6",
+  "pandas": "2.3.3",
+  "scikit-learn": "1.7.2",
+  "plotly": "7.1.0",
+  "python_executable": "C:\\Users\\User\\DACN\\.venv\\Scripts\\python.exe",
+  "python": "3.10.9",
+  "scikit_learn": "1.7.2"
+}

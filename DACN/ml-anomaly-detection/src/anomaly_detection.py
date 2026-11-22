@@ -41,7 +41,7 @@ def run_nab_analysis(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Phan tich bat thuong CSV NAB CPU theo thu tu thoi gian.")
     parser.add_argument("source", nargs="?", type=Path,
-                        default=Path(__file__).parents[1] / "data" / "cpu_0.csv")
+                        default=Path(__file__).parents[1] / "resources" / "examples" / "cpu_0.csv")
     parser.add_argument("--split-index", type=int, help="So dong huan luyen; mac dinh 70%% du lieu.")
     parser.add_argument("--contamination", type=float, default=0.01)
     args = parser.parse_args()

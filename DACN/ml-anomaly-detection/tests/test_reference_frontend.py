@@ -18,7 +18,7 @@ from streamlit.testing.v1 import AppTest
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-APP_PATH = PROJECT_ROOT / "frontend" / "app.py"
+APP_PATH = PROJECT_ROOT / "frontend" / "research_app.py"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 if str(Path(__file__).resolve().parent) not in sys.path:
@@ -27,11 +27,14 @@ if str(Path(__file__).resolve().parent) not in sys.path:
 from http_transport import APITransport
 
 
+@unittest.skipUnless((PROJECT_ROOT / "resources/nab/nab_cpu_labeled.csv").is_file(), "Optional official NAB dataset is not bundled; reference UI checks require that dataset.")
 class NotebookReferenceFrontendTests(unittest.TestCase):
     def setUp(self) -> None:
         self.transport = APITransport().__enter__()
         self.addCleanup(self.transport.__exit__, None, None, None)
-        self.app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+        self.app = AppTest.from_file(APP_PATH, default_timeout=60)
+        self.app.session_state["interface_mode"] = "Cơ bản"
+        self.app.run()
         self.assert_no_exception()
         self.app.radio(key="interface_mode").set_value("Nâng cao").run()
         self.assert_no_exception()
@@ -66,7 +69,7 @@ class NotebookReferenceFrontendTests(unittest.TestCase):
         self.assertEqual("false", request.url.params["include_time"])
         self.assertEqual("true", request.url.params["include_context"])
         self.assertAlmostEqual(1 / 3550, float(request.url.params["contamination"]))
-        self.assertIn((PROJECT_ROOT / "data" / "nab_cpu_labeled.csv").read_bytes(), request.content)
+        self.assertIn((PROJECT_ROOT / "resources" / "nab" / "nab_cpu_labeled.csv").read_bytes(), request.content)
 
         result = self.app.session_state["detection_run"]
         self.assertEqual(4032, len(result.frame))

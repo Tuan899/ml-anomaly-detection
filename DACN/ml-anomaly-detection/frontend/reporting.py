@@ -26,9 +26,16 @@ def build_report_markdown(run, summary=None, source_name=None) -> bytes:
     summary = summarize_run(run) if summary is None else summary
     meta, data = run.metadata, run.predictions
     source = str(source_name or meta.get("source_name") or "Nguồn dữ liệu của lần phân tích hiện tại")
-    source_kind = str(meta.get("source_kind", meta.get("source_type", ""))).lower()
-    synthetic = any(word in (source + " " + source_kind).lower() for word in
-                    ("demo", "mẫu", "tổng hợp", "synthetic", "mysql_normal.csv", "mysql_anomalous.csv"))
+    source_kind = meta.get("source_kind", meta.get("source_type"))
+    if source_kind is not None:
+        # Explicit capture context takes precedence over a file's arbitrary
+        # name: a real upload called mysql_normal.csv is still an upload.
+        synthetic = str(source_kind).lower() in {"demo", "sample", "synthetic", "synthetic_demo"}
+    else:
+        sample_files = {"mysql_normal.csv", "mysql_query_spike.csv", "mysql_latency_spike.csv"}
+        filename = source.replace("\\", "/").rsplit("/", 1)[-1].lower()
+        synthetic = (filename in sample_files
+                     or any(word in source.lower() for word in ("demo", "mẫu", "tổng hợp", "synthetic")))
     provenance = ("Dữ liệu mẫu tổng hợp phục vụ kiểm thử kịch bản; các kết quả này không xác nhận hiệu quả trên máy chủ thật."
                   if synthetic else "Nguồn và nhãn do người dùng cung cấp; báo cáo không tự xác minh nguyên nhân sự cố.")
     comparison = meta.get("comparison")
@@ -39,7 +46,7 @@ def build_report_markdown(run, summary=None, source_name=None) -> bytes:
         if comparison else
         f"- Bản ghi huấn luyện: {meta.get('train_rows', summary['total_rows'] - summary['rows_analyzed']):,}."
     )
-    lines = ["# ANOMALY LAB — Báo cáo giám sát hoạt động MySQL", "", f"Nguồn dữ liệu: {source}", "", provenance, "",
+    lines = ["# ANOMALY LAB — Báo cáo giám sát hoạt động CSDL", "", f"Nguồn dữ liệu: {source}", "", provenance, "",
              "## Phạm vi phân tích", "",
              f"- Tổng số bản ghi: {summary['total_rows']:,}.",
              training_scope,

@@ -17,6 +17,7 @@ from src.models import evaluate_predictions
 from src.notebook_reference import REFERENCE_DATA, REFERENCE_MODELS, run_notebook_reference
 
 
+@unittest.skipUnless(REFERENCE_DATA.is_file(), "Optional official NAB dataset is not bundled; reference-profile checks require the unmodified source dataset.")
 class NotebookReferenceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

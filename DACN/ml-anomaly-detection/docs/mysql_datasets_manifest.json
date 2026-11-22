@@ -1,0 +1,95 @@
+{
+  "provenance": "Synthetic MySQL activity demonstration fixtures, not measurements from a real MySQL server.",
+  "generator": "scripts/generate_mysql_demo.py",
+  "generation_policy": "fixed readable values; no estimator fitting or score-based selection",
+  "rows": 10,
+  "sampling_interval_seconds": 60,
+  "recommended_train_fraction": 0.7,
+  "recommended_split_index": 7,
+  "training_baseline": "All three datasets have identical first seven normal chronological training rows; incidents occur only in test rows eight and nine, followed by normal row ten.",
+  "label_policy": {
+    "1": "normal, including bounded natural variation",
+    "-1": "explicitly injected incident"
+  },
+  "metric_definitions": {
+    "queries_per_second": "queries/second averaged over the sampling interval",
+    "connections": "active client connections sampled as a gauge",
+    "response_time_ms": "milliseconds for a lightweight probe; synthetic baseline in these fixtures",
+    "slow_queries": "count of slow queries during the sampling interval (delta Slow_queries), not a lifetime counter",
+    "connection_errors": "count of failed connection attempts during the sampling interval (delta Aborted_connects), not all MySQL error categories or a lifetime counter"
+  },
+  "scenario_policy": "Each abnormal CSV contains one isolated scenario. Secondary event counts are explicitly injected symptoms, not evidence of root cause. Neither labels nor scenario are model features.",
+  "incidents": [
+    {
+      "file": "mysql_query_spike.csv",
+      "scenario": "query_spike",
+      "start_index": 7,
+      "end_index_exclusive": 9,
+      "row_numbers": [
+        8,
+        9
+      ],
+      "start_timestamp": "2026-10-01 09:07:00",
+      "end_timestamp": "2026-10-01 09:08:00",
+      "primary_metric": "queries_per_second",
+      "affected_metrics": [
+        "queries_per_second"
+      ],
+      "secondary_metrics": [],
+      "injected_values": {
+        "queries_per_second": [
+          300,
+          350
+        ]
+      }
+    },
+    {
+      "file": "mysql_latency_spike.csv",
+      "scenario": "latency_spike",
+      "start_index": 7,
+      "end_index_exclusive": 9,
+      "row_numbers": [
+        8,
+        9
+      ],
+      "start_timestamp": "2026-10-01 09:07:00",
+      "end_timestamp": "2026-10-01 09:08:00",
+      "primary_metric": "response_time_ms",
+      "affected_metrics": [
+        "response_time_ms",
+        "slow_queries"
+      ],
+      "secondary_metrics": [
+        "slow_queries"
+      ],
+      "injected_values": {
+        "response_time_ms": [
+          180.0,
+          220.0
+        ],
+        "slow_queries": [
+          8,
+          10
+        ]
+      }
+    }
+  ],
+  "files": {
+    "mysql_normal.csv": {
+      "rows": 10,
+      "anomalies": 0,
+      "sha256": "f38315513f1372a8381e4f329d89ff8d009c1168c7bcd3230e0ccd2329e34220"
+    },
+    "mysql_query_spike.csv": {
+      "rows": 10,
+      "anomalies": 2,
+      "sha256": "dbef73ec86b84230b0b471bf90c90aef043037e6d8e2d7c172d44c32fce3e29b"
+    },
+    "mysql_latency_spike.csv": {
+      "rows": 10,
+      "anomalies": 2,
+      "sha256": "1b03ef8fcf1afb18ccb7e170b1de03ef5c6f506192fa4463ddd12f41aa23ffb8"
+    }
+  },
+  "limitations": "Only ten rows per file (seven train, three test): suitable for showing the interface and checking functionality, not training a reliable production detector or ranking algorithms. Computed model predictions may differ; no detection result is guaranteed. Does not establish effectiveness on real workloads."
+}

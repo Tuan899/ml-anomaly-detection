@@ -71,9 +71,10 @@ class ApiClientTests(unittest.TestCase):
         self.assertFalse(kwargs["trust_env"])
         self.assertEqual(3, kwargs["timeout"].connect)
 
+    @unittest.skipUnless((Path(__file__).resolve().parents[1] / "resources/nab/nab_cpu_labeled.csv").is_file(), "Optional official NAB dataset is not bundled; reference HTTP checks require that dataset.")
     def test_reference_mode_uses_fixed_protocol_through_actual_api(self):
         project = Path(__file__).resolve().parents[1]
-        content = (project / "data" / "nab_cpu_labeled.csv").read_bytes()
+        content = (project / "resources" / "nab" / "nab_cpu_labeled.csv").read_bytes()
 
         def forward(url, **kwargs):
             kwargs.pop("trust_env")
@@ -99,9 +100,10 @@ class ApiClientTests(unittest.TestCase):
             with self.assertRaisesRegex(BackendError, "không đúng định dạng"):
                 detect_via_api(CSV, "data.csv", analysis_mode="notebook_reference")
 
+    @unittest.skipUnless((Path(__file__).resolve().parents[1] / "resources/nab/nab_cpu_labeled.csv").is_file(), "Optional official NAB dataset is not bundled; reference payload checks require that dataset.")
     def test_reference_rejects_malformed_baseline_and_matrices_before_display(self):
         project = Path(__file__).resolve().parents[1]
-        content = (project / "data" / "nab_cpu_labeled.csv").read_bytes()
+        content = (project / "resources" / "nab" / "nab_cpu_labeled.csv").read_bytes()
         response = self.api.post(
             "/detect", params={"analysis_mode": "notebook_reference", "include_context": True},
             files={"file": ("nab.csv", content, "text/csv")},

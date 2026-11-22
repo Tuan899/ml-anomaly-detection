@@ -84,6 +84,7 @@ class NotebookTests(unittest.TestCase):
                 self.assertIsNone(cell["execution_count"])
                 self.assertEqual(cell["outputs"], [])
 
+    @unittest.skipUnless((PROJECT / "resources/nab/ec2_cpu_utilization.csv").is_file(), "Optional official NAB dataset is not bundled; notebook execution requires the unmodified source dataset.")
     def test_cells_run_sequentially_from_supported_working_directories(self):
         directories = (PROJECT.parents[1], PROJECT.parent, PROJECT, NOTEBOOK.parent)
         for directory in directories:
@@ -91,7 +92,7 @@ class NotebookTests(unittest.TestCase):
                 completed = subprocess.run(
                     [sys.executable, "-c", EXECUTE_NOTEBOOK, str(NOTEBOOK)],
                     cwd=directory, capture_output=True, text=True, encoding="utf-8", timeout=90,
-                    env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+                    env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONDONTWRITEBYTECODE": "1"},
                 )
                 self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
                 self.assertIn("Notebook cells completed", completed.stdout)

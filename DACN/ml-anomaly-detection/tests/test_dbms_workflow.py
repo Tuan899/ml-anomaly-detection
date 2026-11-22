@@ -12,7 +12,6 @@ import json
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import patch
 
 import httpx
 import numpy as np
@@ -22,7 +21,7 @@ from streamlit.testing.v1 import AppTest
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-APP_PATH = PROJECT_ROOT / "frontend" / "app.py"
+APP_PATH = PROJECT_ROOT / "frontend" / "research_app.py"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 if str(Path(__file__).resolve().parent) not in sys.path:
@@ -67,7 +66,7 @@ class DBMSApiWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.client = TestClient(app)
-        cls.content = (PROJECT_ROOT / "data" / "mysql_anomalous.csv").read_bytes()
+        cls.content = (PROJECT_ROOT / "data" / "mysql_query_spike.csv").read_bytes()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -167,14 +166,14 @@ class DBMSApiWorkflowTests(unittest.TestCase):
 
 class DBMSHttpClientTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.content = (PROJECT_ROOT / "data" / "mysql_anomalous.csv").read_bytes()
+        self.content = (PROJECT_ROOT / "data" / "mysql_query_spike.csv").read_bytes()
         self.transport = APITransport().__enter__()
         self.addCleanup(self.transport.__exit__, None, None, None)
 
     def detect(self, **changes):
         settings = {"analysis_mode": "dbms", "label_col": "label"}
         settings.update(changes)
-        return detect_via_api(self.content, "mysql_anomalous.csv", **settings)
+        return detect_via_api(self.content, "mysql_query_spike.csv", **settings)
 
     def test_client_keeps_five_metrics_and_actual_test_predictions(self) -> None:
         result = self.detect()
@@ -235,7 +234,9 @@ class DBMSDashboardWorkflowTests(unittest.TestCase):
     def setUp(self) -> None:
         self.transport = APITransport().__enter__()
         self.addCleanup(self.transport.__exit__, None, None, None)
-        self.app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+        self.app = AppTest.from_file(APP_PATH, default_timeout=60)
+        self.app.session_state["interface_mode"] = "Cơ bản"
+        self.app.run()
         self.assert_no_exception()
         self.app.radio(key="interface_mode").set_value("Nâng cao").run()
         self.assert_no_exception()
@@ -257,7 +258,8 @@ class DBMSDashboardWorkflowTests(unittest.TestCase):
         self.assertNotIn("dbms_download_json", keys)
 
     def test_default_dbms_workspace_previews_data_without_training(self) -> None:
-        self.assertEqual("Giám sát hệ quản trị CSDL MySQL", self.app.radio(key="workspace_mode").value)
+        self.assertEqual("Giám sát hệ quản trị CSDL", self.app.radio(key="workspace_mode").value)
+        self.assertEqual(["Dữ liệu kiểm thử", "Tải CSV"], self.app.radio(key="dbms_source").options)
         self.assertEqual("Hoạt động bình thường", self.app.selectbox(key="dbms_sample").value)
         self.assertFalse(self.app.button(key="dbms_run").proto.disabled)
         self.assertEqual({"dbms_download_source"}, {item.key for item in self.app.download_button})
@@ -336,25 +338,21 @@ class DBMSDashboardWorkflowTests(unittest.TestCase):
         self.assert_no_prediction_export()
         self.assertEqual(2, self.transport.mock_post.call_count)
 
-    def test_switching_source_hides_previous_analysis_and_does_not_collect_automatically(self) -> None:
+    def test_switching_source_hides_previous_analysis_without_running_again(self) -> None:
         self.run_analysis(anomalous=True)
-        self.app.radio(key="dbms_source").set_value("Tải CSV MySQL").run()
+        self.app.radio(key="dbms_source").set_value("Tải CSV").run()
         self.assert_no_exception()
         self.assert_no_prediction_export()
         self.assertEqual(0, len(self.app.metric))
         self.assertEqual(1, len(self.app.file_uploader))
-        with patch("frontend.dbms_dashboard.collect_mysql_metrics") as collector:
-            self.app.radio(key="dbms_source").set_value("Kết nối MySQL").run()
-            self.assert_no_exception()
-            collector.assert_not_called()
         self.assert_no_prediction_export()
         self.assertEqual(0, len(self.app.metric))
         self.assertEqual(0, len(self.app.get("plotly_chart")))
         self.transport.mock_post.assert_called_once()
 
     def test_csv_upload_without_selected_labels_runs_without_quality_metrics(self) -> None:
-        content = (PROJECT_ROOT / "data" / "mysql_anomalous.csv").read_bytes()
-        self.app.radio(key="dbms_source").set_value("Tải CSV MySQL").run()
+        content = (PROJECT_ROOT / "data" / "mysql_query_spike.csv").read_bytes()
+        self.app.radio(key="dbms_source").set_value("Tải CSV").run()
         self.app.file_uploader(key="dbms_csv_upload").set_value(("mysql.csv", content, "text/csv")).run()
         self.app.selectbox(key="dbms_label").select_index(0).run()
         self.app.button(key="dbms_run").click().run()
@@ -366,42 +364,15 @@ class DBMSDashboardWorkflowTests(unittest.TestCase):
                              for chart in self.app.get("plotly_chart")))
 
     def test_missing_csv_metric_shows_actionable_error_without_analysis(self) -> None:
-        content = (PROJECT_ROOT / "data" / "mysql_anomalous.csv").read_bytes()
+        content = (PROJECT_ROOT / "data" / "mysql_query_spike.csv").read_bytes()
         invalid = pd.read_csv(BytesIO(content)).drop(columns=["connections"]).to_csv(index=False).encode("utf-8")
-        self.app.radio(key="dbms_source").set_value("Tải CSV MySQL").run()
+        self.app.radio(key="dbms_source").set_value("Tải CSV").run()
         self.app.file_uploader(key="dbms_csv_upload").set_value(("invalid.csv", invalid, "text/csv")).run()
         self.assert_no_exception()
         self.assertTrue(any("connections" in item.value for item in self.app.error))
         self.assert_no_prediction_export()
         self.assertNotIn("dbms_result", self.app.session_state)
         self.transport.mock_post.assert_not_called()
-
-    def test_explicit_live_collection_preserves_returned_measurements_through_api(self) -> None:
-        collected = pd.read_csv(PROJECT_ROOT / "data" / "mysql_normal.csv").iloc[:60][["timestamp", *METRICS]].copy()
-        with patch("frontend.dbms_dashboard.collect_mysql_metrics", return_value=collected) as collector:
-            self.app.radio(key="dbms_source").set_value("Kết nối MySQL").run()
-            self.app.text_input(key="mysql_host").set_value("mysql.example.test")
-            self.app.text_input(key="mysql_password").set_value("TEST_ONLY_PASSWORD")
-            collector.assert_not_called()
-            self.app.button(key="mysql_collect").click().run()
-            self.assert_no_exception()
-            collector.assert_called_once()
-            self.assertEqual("mysql.example.test", collector.call_args.kwargs["host"])
-            self.assertEqual("TEST_ONLY_PASSWORD", collector.call_args.kwargs["password"])
-            self.transport.mock_post.assert_not_called()
-            self.app.button(key="dbms_run").click().run()
-        self.assert_no_exception()
-        self.assertEqual([], list(self.app.error))
-        result = self.app.session_state["dbms_result"]
-        self.assertEqual({}, result.metrics)
-        self.assertEqual(60, len(result.frame))
-        for metric in METRICS:
-            np.testing.assert_allclose(collected[metric], result.frame[metric], rtol=1e-12)
-        request = self.transport.requests[0]
-        self.assertNotIn(b"TEST_ONLY_PASSWORD", request.content)
-        self.assertNotIn(b"mysql.example.test", request.content)
-        self.assertNotIn("password", request.url.params)
-
 
 if __name__ == "__main__":
     unittest.main()

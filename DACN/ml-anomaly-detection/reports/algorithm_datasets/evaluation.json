@@ -1,0 +1,440 @@
+{
+  "configuration": {
+    "analysis_mode": "dbms",
+    "label_col": "label",
+    "train_fraction": 0.7,
+    "split_index": 700,
+    "contamination": 0.01,
+    "include_time": false,
+    "noise_guard": false
+  },
+  "note": "Measured results on fixed synthetic examples; labels defined before fitting. Raw results correspond to noise_guard=False.",
+  "confusion_matrix_order": {
+    "rows": [
+      "normal",
+      "anomaly"
+    ],
+    "columns": [
+      "normal",
+      "anomaly"
+    ]
+  },
+  "datasets": {
+    "MAD.csv": {
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "injected_test_anomalies": 15,
+      "raw_metrics": {
+        "mad": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "isolation_forest": {
+          "precision": 0.5454545454545454,
+          "recall": 0.4,
+          "f1": 0.46153846153846156
+        },
+        "lof": {
+          "precision": 0.7142857142857143,
+          "recall": 1.0,
+          "f1": 0.8333333333333334
+        },
+        "one_class_svm": {
+          "precision": 0.5357142857142857,
+          "recall": 1.0,
+          "f1": 0.6976744186046512
+        }
+      },
+      "raw_confusion_matrices": {
+        "mad": [
+          [
+            285,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "isolation_forest": [
+          [
+            280,
+            5
+          ],
+          [
+            9,
+            6
+          ]
+        ],
+        "lof": [
+          [
+            279,
+            6
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "one_class_svm": [
+          [
+            272,
+            13
+          ],
+          [
+            0,
+            15
+          ]
+        ]
+      },
+      "guarded_metrics": {
+        "mad": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "isolation_forest": {
+          "precision": 1.0,
+          "recall": 0.4,
+          "f1": 0.5714285714285714
+        },
+        "lof": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "one_class_svm": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      },
+      "raw_alert_counts": {
+        "mad": 15,
+        "isolation_forest": 11,
+        "lof": 21,
+        "one_class_svm": 28
+      },
+      "guarded_alert_counts": {
+        "mad": 15,
+        "isolation_forest": 6,
+        "lof": 15,
+        "one_class_svm": 15
+      }
+    },
+    "Isolation_Forest.csv": {
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "injected_test_anomalies": 15,
+      "raw_metrics": {
+        "mad": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "isolation_forest": {
+          "precision": 0.75,
+          "recall": 1.0,
+          "f1": 0.8571428571428571
+        },
+        "lof": {
+          "precision": 0.8333333333333334,
+          "recall": 1.0,
+          "f1": 0.9090909090909091
+        },
+        "one_class_svm": {
+          "precision": 0.7142857142857143,
+          "recall": 1.0,
+          "f1": 0.8333333333333334
+        }
+      },
+      "raw_confusion_matrices": {
+        "mad": [
+          [
+            285,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "isolation_forest": [
+          [
+            280,
+            5
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "lof": [
+          [
+            282,
+            3
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "one_class_svm": [
+          [
+            279,
+            6
+          ],
+          [
+            0,
+            15
+          ]
+        ]
+      },
+      "guarded_metrics": {
+        "mad": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "isolation_forest": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "lof": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "one_class_svm": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      },
+      "raw_alert_counts": {
+        "mad": 15,
+        "isolation_forest": 20,
+        "lof": 18,
+        "one_class_svm": 21
+      },
+      "guarded_alert_counts": {
+        "mad": 15,
+        "isolation_forest": 15,
+        "lof": 15,
+        "one_class_svm": 15
+      }
+    },
+    "LOF.csv": {
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "injected_test_anomalies": 15,
+      "raw_metrics": {
+        "mad": {
+          "precision": 0.15625,
+          "recall": 1.0,
+          "f1": 0.2702702702702703
+        },
+        "isolation_forest": {
+          "precision": 0.8,
+          "recall": 0.5333333333333333,
+          "f1": 0.64
+        },
+        "lof": {
+          "precision": 0.6,
+          "recall": 1.0,
+          "f1": 0.75
+        },
+        "one_class_svm": {
+          "precision": 0.7894736842105263,
+          "recall": 1.0,
+          "f1": 0.8823529411764706
+        }
+      },
+      "raw_confusion_matrices": {
+        "mad": [
+          [
+            204,
+            81
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "isolation_forest": [
+          [
+            283,
+            2
+          ],
+          [
+            7,
+            8
+          ]
+        ],
+        "lof": [
+          [
+            275,
+            10
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "one_class_svm": [
+          [
+            281,
+            4
+          ],
+          [
+            0,
+            15
+          ]
+        ]
+      },
+      "guarded_metrics": {
+        "mad": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "isolation_forest": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "lof": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "one_class_svm": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        }
+      },
+      "raw_alert_counts": {
+        "mad": 96,
+        "isolation_forest": 10,
+        "lof": 25,
+        "one_class_svm": 19
+      },
+      "guarded_alert_counts": {
+        "mad": 0,
+        "isolation_forest": 0,
+        "lof": 0,
+        "one_class_svm": 0
+      }
+    },
+    "One_Class_SVM.csv": {
+      "rows": 1000,
+      "train_rows": 700,
+      "test_rows": 300,
+      "injected_test_anomalies": 15,
+      "raw_metrics": {
+        "mad": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "isolation_forest": {
+          "precision": 0.6875,
+          "recall": 0.7333333333333333,
+          "f1": 0.7096774193548387
+        },
+        "lof": {
+          "precision": 0.75,
+          "recall": 1.0,
+          "f1": 0.8571428571428571
+        },
+        "one_class_svm": {
+          "precision": 0.6521739130434783,
+          "recall": 1.0,
+          "f1": 0.7894736842105263
+        }
+      },
+      "raw_confusion_matrices": {
+        "mad": [
+          [
+            285,
+            0
+          ],
+          [
+            15,
+            0
+          ]
+        ],
+        "isolation_forest": [
+          [
+            280,
+            5
+          ],
+          [
+            4,
+            11
+          ]
+        ],
+        "lof": [
+          [
+            280,
+            5
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "one_class_svm": [
+          [
+            277,
+            8
+          ],
+          [
+            0,
+            15
+          ]
+        ]
+      },
+      "guarded_metrics": {
+        "mad": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "isolation_forest": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "lof": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "one_class_svm": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        }
+      },
+      "raw_alert_counts": {
+        "mad": 0,
+        "isolation_forest": 16,
+        "lof": 20,
+        "one_class_svm": 23
+      },
+      "guarded_alert_counts": {
+        "mad": 0,
+        "isolation_forest": 0,
+        "lof": 0,
+        "one_class_svm": 0
+      }
+    }
+  }
+}

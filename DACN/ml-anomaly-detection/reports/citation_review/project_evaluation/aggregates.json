@@ -1,0 +1,110 @@
+{
+  "raw_model": {
+    "mad": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 131,
+      "FP": 130,
+      "TN": 1035,
+      "FN": 0,
+      "micro_precision": 0.5019157088122606,
+      "micro_recall": 1.0,
+      "micro_f1": 0.6683673469387755,
+      "macro_precision": 0.5038054538054538,
+      "macro_recall": 1.0,
+      "macro_f1": 0.6693949606804687
+    },
+    "isolation_forest": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 26,
+      "FP": 31,
+      "TN": 1134,
+      "FN": 105,
+      "micro_precision": 0.45614035087719296,
+      "micro_recall": 0.1984732824427481,
+      "micro_f1": 0.2765957446808511,
+      "macro_precision": 0.2891774891774892,
+      "macro_recall": 0.2011980267794221,
+      "macro_f1": 0.22937062937062938
+    },
+    "lof": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 131,
+      "FP": 14,
+      "TN": 1151,
+      "FN": 0,
+      "micro_precision": 0.903448275862069,
+      "micro_recall": 1.0,
+      "micro_f1": 0.9492753623188406,
+      "macro_precision": 0.9034863945578231,
+      "macro_recall": 1.0,
+      "macro_f1": 0.9492710811083883
+    },
+    "one_class_svm": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 131,
+      "FP": 22,
+      "TN": 1143,
+      "FN": 0,
+      "micro_precision": 0.8562091503267973,
+      "micro_recall": 1.0,
+      "micro_f1": 0.9225352112676055,
+      "macro_precision": 0.8562091503267975,
+      "macro_recall": 1.0,
+      "macro_f1": 0.922508398656215
+    }
+  },
+  "operational_alert": {
+    "mad": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 131,
+      "FP": 0,
+      "TN": 1165,
+      "FN": 0,
+      "micro_precision": 1.0,
+      "micro_recall": 1.0,
+      "micro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0
+    },
+    "isolation_forest": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 26,
+      "FP": 0,
+      "TN": 1165,
+      "FN": 105,
+      "micro_precision": 1.0,
+      "micro_recall": 0.1984732824427481,
+      "micro_f1": 0.33121019108280253,
+      "macro_precision": 0.6666666666666666,
+      "macro_recall": 0.2011980267794221,
+      "macro_f1": 0.26779147739563053
+    },
+    "lof": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 131,
+      "FP": 0,
+      "TN": 1165,
+      "FN": 0,
+      "micro_precision": 1.0,
+      "micro_recall": 1.0,
+      "micro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0
+    },
+    "one_class_svm": {
+      "scope": "three anomalous scenarios only; normal dataset excluded",
+      "TP": 131,
+      "FP": 0,
+      "TN": 1165,
+      "FN": 0,
+      "micro_precision": 1.0,
+      "micro_recall": 1.0,
+      "micro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0
+    }
+  }
+}

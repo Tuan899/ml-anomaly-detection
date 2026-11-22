@@ -1,0 +1,746 @@
+{
+  "tabId": "t.amovavlwnibx",
+  "revision": "AHj4eMSqg3o6SSSPo68FEH0mCWXQLshgW2sCSDu1RSgeKfGz8lGhAkUri3DAKvEcx_UM9240PdjH3wALQ693K2mXCRjMDhzGdxEJU6fOv_Q",
+  "edits": [
+    {
+      "start": 32137,
+      "end": 32400,
+      "text": "Threads_connected được đọc như giá trị tức thời. slow_queries = ΔSlow_queries và connection_errors = ΔAborted_connects là số sự kiện trong khoảng, không phải tỷ lệ mỗi phút. response_time_ms được đo riêng bằng thời gian khứ hồi SELECT 1. Các số đo có cả ảnh hưởng của hoạt động giám sát; không truy vấn hoặc sửa bảng nghiệp vụ."
+    },
+    {
+      "start": 32084,
+      "end": 32136,
+      "text": "queries_per_second = (Questionsₜ − Questionsₜ₋₁)/Δt (B.1)"
+    },
+    {
+      "start": 32014,
+      "end": 32045,
+      "text": "'Questions', 'Threads_connected',"
+    },
+    {
+      "start": 31767,
+      "end": 31969,
+      "text": "Collector thực tế đọc các bộ đếm toàn cục và thăm dò SELECT 1. MySQL phân biệt Questions (các câu lệnh do client thực thi) với Queries (có thể bao gồm câu lệnh trong stored program); báo cáo dùng Questions theo đúng collector [9], [10]. Khi server reset hoặc bộ đếm giảm, đợt thu bị từ chối thay vì tạo tốc độ âm."
+    },
+    {
+      "start": 31333,
+      "end": 31713,
+      "text": "Bước 4. Chọn So sánh dữ liệu để dùng chung một mô hình tham chiếu cho hai bộ; tải CSV/JSON và báo cáo để kiểm tra lại. Giải thích rằng 50 → 51 chưa tự động là sự cố: cảnh báo sau lọc yêu cầu mô hình gắn cờ và một chỉ số vượt dung sai train. Dấu hiệu trên biểu đồ chưa xác minh nguyên nhân; cần đối chiếu log và ngữ cảnh vận hành."
+    },
+    {
+      "start": 30994,
+      "end": 31332,
+      "text": "Bước 3. Trong Nâng cao, đối chiếu Dự đoán mô hình gốc và Cảnh báo sau lọc. Đọc confusion matrix, TP/FP/FN/TN và Precision/Recall/F1. Trên K2, cần trình bày cả trường hợp Isolation Forest bỏ sót 44 điểm; không thay nhãn hoặc tham số theo kết quả test để tạo bảng đẹp."
+    },
+    {
+      "start": 30742,
+      "end": 30993,
+      "text": "Bước 2. Chọn Hoạt động bất thường để dùng K2 (mysql_query_spike.csv), hoặc mở Nâng cao để chọn K3/K4. Giữ cấu hình mô hình và tỷ lệ chia tập khi đối chiếu. Khi tải CSV riêng, dùng schema ở Bảng 3.1; nhãn label là 1/−1 và không thuộc tập đặc trưng."
+    },
+    {
+      "start": 30316,
+      "end": 30741,
+      "text": "Bước 1. Chạy backend FastAPI và frontend Streamlit theo README. Mở chế độ Cơ bản, chọn dữ liệu mẫu K1 rồi bấm Bắt đầu phân tích. Xem số điểm test, số cảnh báo và báo cáo. K1 không có nhãn bất thường nên dùng số FP để đánh giá; không dùng Recall/F1 của K1 để kết luận khả năng phát hiện."
+    },
+    {
+      "start": 28247,
+      "end": 30278,
+      "text": "[1]\tV. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,” ACM Comput. Surv., vol. 41, no. 3, Art. no. 15, Jul. 2009, doi: 10.1145/1541880.1541882.\n[2]\tA. Blázquez-García, A. Conde, U. Mori, and J. A. Lozano, “A review on outlier/anomaly detection in time series data,” ACM Comput. Surv., vol. 54, no. 3, Art. no. 56, Apr. 2021, doi: 10.1145/3444690.\n[3]\tF. T. Liu, K. M. Ting, and Z.-H. Zhou, “Isolation forest,” in Proc. 8th IEEE Int. Conf. Data Mining, Pisa, Italy, 2008, pp. 413–422, doi: 10.1109/ICDM.2008.17.\n[4]\tM. M. Breunig, H.-P. Kriegel, R. T. Ng, and J. Sander, “LOF: Identifying density-based local outliers,” ACM SIGMOD Rec., vol. 29, no. 2, pp. 93–104, 2000, doi: 10.1145/335191.335388.\n[5]\tscikit-learn developers, “Novelty and outlier detection,” scikit-learn documentation. Accessed: Nov. 14, 2026. [Online]. Available: https://scikit-learn.org/stable/modules/outlier_detection.html\n[6]\tB. Schölkopf, J. C. Platt, J. Shawe-Taylor, A. J. Smola, and R. C. Williamson, “Estimating the support of a high-dimensional distribution,” Neural Comput., vol. 13, no. 7, pp. 1443–1471, Jul. 2001, doi: 10.1162/089976601750264965.\n[7]\tNIST/SEMATECH, “Detection of outliers,” e-Handbook of Statistical Methods, sec. 1.3.5.17. Accessed: Nov. 14, 2026. [Online]. Available: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm\n[8]\tS. Ahmad, A. Lavin, S. Purdy, and Z. Agha, “Unsupervised real-time anomaly detection for streaming data,” Neurocomputing, vol. 262, pp. 134–147, Nov. 2017, doi: 10.1016/j.neucom.2017.04.070.\n[9]\tOracle, “SHOW STATUS statement,” MySQL 8.4 Reference Manual, sec. 15.7.7.37. Accessed: Nov. 14, 2026. [Online]. Available: https://dev.mysql.com/doc/refman/8.4/en/show-status.html\n[10]\tOracle, “Server status variables,” MySQL 8.4 Reference Manual, sec. 7.1.10. Accessed: Nov. 14, 2026. [Online]. Available: https://dev.mysql.com/doc/refman/8.4/en/server-status-variables.html\n[11]\tNumenta, “Numenta Anomaly Benchmark (NAB),” GitHub. Accessed: Nov. 14, 2026. [Online]. Available: https://github.com/numenta/NAB\n[12]\tF. Pedregosa et al., “Scikit-learn: Machine learning in Python,” J. Mach. Learn. Res., vol. 12, no. 85, pp. 2825–2830, 2011. [Online]. Available: https://jmlr.org/papers/v12/pedregosa11a.html\n"
+    },
+    {
+      "start": 28075,
+      "end": 28225,
+      "text": "Khả năng tích hợp PostgreSQL, tự động cập nhật nền và giải thích cảnh báo sâu hơn chỉ nên triển khai sau khi có nhu cầu và phép đo phù hợp. Tiếp tục duy trì thư viện tài liệu tham khảo, phiên bản dữ liệu và mã nguồn để báo cáo có thể được tái lập."
+    },
+    {
+      "start": 27821,
+      "end": 28073,
+      "text": "Cần thực hiện thí nghiệm riêng để trả lời RQ3: đơn biến so với năm biến, có/không có đặc trưng lịch và cửa sổ trượt nhân quả, mô hình gốc so với chính sách lọc. Nếu chuyển sang cảnh báo liên tục, phải bổ sung lịch lấy mẫu, lưu lịch sử, cơ chế phản hồi, kiểm soát truy cập và đo độ trễ từ lúc lấy mẫu đến khi cảnh báo."
+    },
+    {
+      "start": 27406,
+      "end": 27819,
+      "text": "Ưu tiên tiếp theo là thu chuỗi số đo MySQL thật trong nhiều ngày với tài khoản chỉ đọc, TLS và lịch sự kiện độc lập để có nhãn đáng tin cậy. Cần đánh giá nhiều mức tải, bất thường nhỏ/kéo dài, reset bộ đếm và trôi phân bố. Tách validation để chọn tham số, giữ test độc lập; lặp nhiều seed và báo cáo biến thiên hoặc khoảng tin cậy trước khi xếp hạng mô hình."
+    },
+    {
+      "start": 26912,
+      "end": 27365,
+      "text": "Kết quả cho thấy nguyên mẫu phù hợp để trình diễn quy trình kiểm tra dữ liệu, huấn luyện, xem cảnh báo và đối chiếu nhãn. Nó chưa chứng minh một thuật toán tốt nhất cho mọi hệ MySQL; chưa có dữ liệu tải thật để đánh giá khả năng tổng quát. Số liệu công bố từ Liu và cộng sự hoặc Ahmad và cộng sự là bằng chứng nghiên cứu liên quan, không phải thành tích đo được của hệ thống này [3], [8]."
+    },
+    {
+      "start": 26436,
+      "end": 26910,
+      "text": "Thực nghiệm trên bốn CSV tổng hợp có thể tái tạo đã được thực hiện với cách chia 1.008/432, chuẩn hóa và huấn luyện chỉ trên train. Sau lọc vận hành, MAD, LOF và One-Class SVM đạt Precision/Recall/F1 bằng 100% trên ba sự cố được thiết kế; Isolation Forest có Recall 0%, 4,55% và 55,81%. Dự đoán gốc, ảnh hưởng của bộ lọc và quy ước khi mẫu số bằng 0 đã được công bố riêng để tránh diễn giải quá mức."
+    },
+    {
+      "start": 25930,
+      "end": 26434,
+      "text": "Đề tài đã triển khai được nguyên mẫu phát hiện bất thường trên năm chỉ số hoạt động MySQL, gồm MAD/robust Z-score, Isolation Forest, LOF và One-Class SVM; đồng thời xây dựng giao diện Streamlit, API FastAPI, biểu đồ và chức năng xuất bằng chứng. Phần nền tảng phân biệt bất thường điểm/ngữ cảnh/tập thể, phép đánh giá theo điểm và đánh giá có xét thời điểm phát hiện trong NAB."
+    },
+    {
+      "start": 25757,
+      "end": 25873,
+      "text": "Giới hạn thực nghiệm: các sự kiện được chèn có biên độ lớn, chỉ có ba dạng bất thường, train được thiết kế bình thường và các bộ chia sẻ một nền. Bộ lọc được định nghĩa sẵn nhưng vẫn đóng góp đáng kể vào điểm số. Chưa đo tải MySQL thật, độ trễ cảnh báo từ đầu đến cuối, độ bền trước trôi dữ liệu hoặc nhiều lần lặp. Do đó không suy rộng F1 = 100% thành độ chính xác vận hành thực tế."
+    },
+    {
+      "start": 24345,
+      "end": 24674,
+      "text": "Với ba sự cố tổng hợp biên độ lớn, MAD, LOF và One-Class SVM cùng tìm đủ điểm sự kiện sau lọc. Isolation Forest bỏ sót nhiều điểm với cấu hình mặc định. Các số liệu chỉ hỗ trợ trả lời RQ1/RQ2 trong phạm vi bộ demo; không phủ định kết quả AUC trong bài báo gốc vì khác dữ liệu, chỉ số và cách đặt ngưỡng [3]. RQ3 về lợi ích cửa sổ trượt hoặc so sánh đơn biến/đa biến chưa được kiểm chứng do chưa có thí nghiệm loại bỏ thành phần."
+    },
+    {
+      "start": 23892,
+      "end": 24343,
+      "text": "Kết quả mô hình gốc cần được đọc riêng. Trên K1, số FP gốc của MAD/Isolation Forest/LOF/One-Class SVM lần lượt là 48/11/5/8; sau lọc đều bằng 0. Trên K2, F1 gốc tương ứng là 70,97%/0%/94,62%/92,63%; sau lọc là 100%/0%/100%/100%. Trên K3, F1 gốc là 65,67%/7,27%/95,65%/92,63%; trên K4 là 64,18%/61,54%/94,51%/91,49%. Không được gọi các chỉ số sau lọc là chất lượng riêng của estimator."
+    },
+    {
+      "start": 23421,
+      "end": 23850,
+      "text": "Mỗi chỉ số trong Bảng 4.2 là trung bình của kết quả K2, K3, K4, không phải tính từ một confusion matrix gộp. Với Isolation Forest, Recall lần lượt là 0/44 = 0%, 2/44 = 4,55% và 24/43 = 55,81%; F1 là 0%, 8,70% và 71,64%. Precision trên K2 không xác định vì không có cảnh báo; để tương thích phần mềm, giá trị 0 theo quy ước được dùng khi lấy trung bình. Vì vậy Precision trung bình 66,67% không có nghĩa một phần ba cảnh báo hiện có là sai. Chưa có phép thử nhiều seed hay khoảng tin cậy."
+    },
+    {
+      "start": 23418,
+      "end": 23419,
+      "text": "0,003361"
+    },
+    {
+      "start": 23415,
+      "end": 23416,
+      "text": "0"
+    },
+    {
+      "start": 23412,
+      "end": 23413,
+      "text": "100,00"
+    },
+    {
+      "start": 23409,
+      "end": 23410,
+      "text": "100,00"
+    },
+    {
+      "start": 23406,
+      "end": 23407,
+      "text": "100,00"
+    },
+    {
+      "start": 23387,
+      "end": 23388,
+      "text": "0,013112"
+    },
+    {
+      "start": 23384,
+      "end": 23385,
+      "text": "0"
+    },
+    {
+      "start": 23381,
+      "end": 23382,
+      "text": "100,00"
+    },
+    {
+      "start": 23378,
+      "end": 23379,
+      "text": "100,00"
+    },
+    {
+      "start": 23375,
+      "end": 23376,
+      "text": "100,00"
+    },
+    {
+      "start": 23366,
+      "end": 23367,
+      "text": "0,110625"
+    },
+    {
+      "start": 23363,
+      "end": 23364,
+      "text": "0"
+    },
+    {
+      "start": 23360,
+      "end": 23361,
+      "text": "26,78"
+    },
+    {
+      "start": 23357,
+      "end": 23358,
+      "text": "20,12"
+    },
+    {
+      "start": 23354,
+      "end": 23355,
+      "text": "66,67"
+    },
+    {
+      "start": 23332,
+      "end": 23333,
+      "text": "0,000236"
+    },
+    {
+      "start": 23329,
+      "end": 23330,
+      "text": "0"
+    },
+    {
+      "start": 23326,
+      "end": 23327,
+      "text": "100,00"
+    },
+    {
+      "start": 23323,
+      "end": 23324,
+      "text": "100,00"
+    },
+    {
+      "start": 23320,
+      "end": 23321,
+      "text": "100,00"
+    },
+    {
+      "start": 23311,
+      "end": 23318,
+      "text": "MAD"
+    },
+    {
+      "start": 23295,
+      "end": 23308,
+      "text": "Train + predict TB (s)"
+    },
+    {
+      "start": 23273,
+      "end": 23281,
+      "text": "F1 (%)"
+    },
+    {
+      "start": 23265,
+      "end": 23271,
+      "text": "Recall (%)"
+    },
+    {
+      "start": 23254,
+      "end": 23263,
+      "text": "Precision (%)"
+    },
+    {
+      "start": 23175,
+      "end": 23236,
+      "text": "Bảng 4.2. Trung bình không trọng số trên ba kịch bản bất thường sau lọc (%)"
+    },
+    {
+      "start": 23011,
+      "end": 23103,
+      "text": "Hình 4.2. Giá trị QPS, nhãn và cảnh báo của bốn phương pháp trên cùng 432 điểm test K2."
+    },
+    {
+      "start": 22923,
+      "end": 23009,
+      "text": "Hình 4.1. Confusion matrix của bốn phương pháp trên K2 sau lọc vận hành."
+    },
+    {
+      "start": 22538,
+      "end": 22921,
+      "text": "Confusion matrix giữ thứ tự nhãn [1, −1], hàng là nhãn thật và cột là dự đoán, do đó ma trận bằng [[TN, FP], [FN, TP]]. Với K2, Isolation Forest có [[388, 0], [44, 0]], còn MAD, LOF và One-Class SVM có [[388, 0], [0, 44]]. Điều này cho thấy không có cảnh báo sai chưa đồng nghĩa mô hình phát hiện tốt: Isolation Forest bỏ sót toàn bộ 44 điểm bất thường trong kịch bản này."
+    },
+    {
+      "start": 22535,
+      "end": 22536,
+      "text": "0,004080"
+    },
+    {
+      "start": 22532,
+      "end": 22533,
+      "text": "388"
+    },
+    {
+      "start": 22529,
+      "end": 22530,
+      "text": "0"
+    },
+    {
+      "start": 22526,
+      "end": 22527,
+      "text": "0"
+    },
+    {
+      "start": 22523,
+      "end": 22524,
+      "text": "44"
+    },
+    {
+      "start": 22520,
+      "end": 22521,
+      "text": "44"
+    },
+    {
+      "start": 22501,
+      "end": 22502,
+      "text": "0,014021"
+    },
+    {
+      "start": 22498,
+      "end": 22499,
+      "text": "388"
+    },
+    {
+      "start": 22495,
+      "end": 22496,
+      "text": "0"
+    },
+    {
+      "start": 22492,
+      "end": 22493,
+      "text": "0"
+    },
+    {
+      "start": 22489,
+      "end": 22490,
+      "text": "44"
+    },
+    {
+      "start": 22486,
+      "end": 22487,
+      "text": "44"
+    },
+    {
+      "start": 22477,
+      "end": 22478,
+      "text": "0,112816"
+    },
+    {
+      "start": 22474,
+      "end": 22475,
+      "text": "388"
+    },
+    {
+      "start": 22471,
+      "end": 22472,
+      "text": "44"
+    },
+    {
+      "start": 22468,
+      "end": 22469,
+      "text": "0"
+    },
+    {
+      "start": 22465,
+      "end": 22466,
+      "text": "0"
+    },
+    {
+      "start": 22462,
+      "end": 22463,
+      "text": "0"
+    },
+    {
+      "start": 22440,
+      "end": 22441,
+      "text": "0,000227"
+    },
+    {
+      "start": 22437,
+      "end": 22438,
+      "text": "388"
+    },
+    {
+      "start": 22434,
+      "end": 22435,
+      "text": "0"
+    },
+    {
+      "start": 22431,
+      "end": 22432,
+      "text": "0"
+    },
+    {
+      "start": 22428,
+      "end": 22429,
+      "text": "44"
+    },
+    {
+      "start": 22425,
+      "end": 22426,
+      "text": "44"
+    },
+    {
+      "start": 22416,
+      "end": 22423,
+      "text": "MAD"
+    },
+    {
+      "start": 22347,
+      "end": 22354,
+      "text": "Nguồn: evaluation.json và mysql_query_spike_predictions.csv của lần chạy 14/11/2026."
+    },
+    {
+      "start": 22276,
+      "end": 22346,
+      "text": "Bảng 4.1. Kết quả tự chạy trên K2 sau lọc vận hành"
+    },
+    {
+      "start": 21943,
+      "end": 22274,
+      "text": "Mỗi tệp có 432 điểm test. Bảng 4.1 minh họa K2 với 44 bất thường và 388 điểm bình thường, dùng cảnh báo sau lọc vận hành. Thời gian là tổng train + predict do metadata mô hình ghi nhận, không gồm đọc CSV, StandardScaler dùng chung, tạo bằng chứng, HTTP hay hiển thị. Các số đo thời gian là một lượt chạy, không dùng để khẳng định thứ hạng tốc độ tổng thể."
+    },
+    {
+      "start": 21533,
+      "end": 21899,
+      "text": "Kết quả trong chương này được tính bằng scripts/evaluate_mysql_demo.py lúc 13:50 ngày 14/11/2026 (UTC+7), trên bốn CSV và môi trường mô tả ở Chương 3. Dữ liệu nguồn, hash, tham số, dự đoán và các bảng điểm được lưu trong reports/citation_review/project_evaluation_venv. Đây là kết quả chạy chương trình trên dữ liệu tổng hợp, không phải số liệu sao chép từ bài báo hoặc đo trực tiếp từ MySQL."
+    },
+    {
+      "start": 21407,
+      "end": 21488,
+      "text": "Hình 3.2. Bốn bộ dữ liệu tổng hợp, mốc chia train/test và nhãn sự kiện."
+    },
+    {
+      "start": 21347,
+      "end": 21405,
+      "text": "Hình 3.1. Quy trình phân tích CSV và phạm vi học/kiểm tra trong ANOMALY LAB."
+    },
+    {
+      "start": 20963,
+      "end": 21345,
+      "text": "Chức năng so sánh hai bộ dữ liệu dùng chung mô hình và bộ chuẩn hóa học một lần từ tiền tố của bộ tham chiếu, rồi dự đoán hai phần test. Các thẻ số liệu thể hiện số mẫu kiểm tra, số thời điểm cảnh báo và trạng thái; biểu đồ có tooltip giá trị đo. Kết quả cũ được ẩn khi đổi dữ liệu/cấu hình. Hình dưới minh họa quy trình và dữ liệu thực nghiệm từ code; không được trình bày như ảnh chụp giao diện."
+    },
+    {
+      "start": 20522,
+      "end": 20961,
+      "text": "ANOMALY LAB đã cung cấp luồng Cơ bản ba bước: chọn dữ liệu, phân tích và xem/tải kết quả. Luồng Nâng cao cho phép chọn thuật toán, tham số và xem cả dự đoán gốc/cảnh báo sau lọc. Frontend gửi CSV tới FastAPI; mô hình chỉ chạy ở backend. Khi API không kết nối được, giao diện báo lỗi thay vì tự tạo dự đoán thay thế."
+    },
+    {
+      "start": 20469,
+      "end": 20479,
+      "text": "RBF; nu = 0,01; gamma = scale; StandardScaler"
+    },
+    {
+      "start": 20414,
+      "end": 20424,
+      "text": "20 lân cận; contamination = 0,01; novelty = True; p = 2"
+    },
+    {
+      "start": 20359,
+      "end": 20369,
+      "text": "100 cây; auto = 256 mẫu/cây; 0,01; random_state = 42"
+    },
+    {
+      "start": 20286,
+      "end": 20296,
+      "text": "3,5; max |robust Z|; median/MAD train"
+    },
+    {
+      "start": 20256,
+      "end": 20284,
+      "text": "Ngưỡng; cách gộp năm đặc trưng"
+    },
+    {
+      "start": 20247,
+      "end": 20254,
+      "text": "MAD/robust Z-score"
+    },
+    {
+      "start": 20153,
+      "end": 20188,
+      "text": "Bảng 3.3. Cấu hình mô hình đã chạy; mọi bộ chuẩn hóa đều fit train"
+    },
+    {
+      "start": 19698,
+      "end": 20151,
+      "text": "Bộ lọc vận hành chỉ giữ cảnh báo nếu mô hình đã gắn cờ và có ít nhất một chỉ số lệch nền quá dung sai train. Dung sai là max(3,5 × max(1,4826 × MAD, IQR/1,349), dung sai tuyệt đối, 5% × |trung vị train|). Dung sai tuyệt đối theo thứ tự năm chỉ số là [2; 2; 5; 1; 0]. Đây là chính sách demo tách khỏi estimator, không phải ngưỡng MySQL/SLA. Điểm quyết định và dự đoán gốc luôn được lưu để đánh giá riêng."
+    },
+    {
+      "start": 19659,
+      "end": 19696,
+      "text": "43 điểm, 21:41–22:23 UTC"
+    },
+    {
+      "start": 19632,
+      "end": 19657,
+      "text": "mysql_latency_spike.csv; latency × 9 + 90, slow_queries + 8"
+    },
+    {
+      "start": 19578,
+      "end": 19604,
+      "text": "44 điểm, 19:40–20:23 UTC"
+    },
+    {
+      "start": 19554,
+      "end": 19576,
+      "text": "mysql_connection_spike.csv; connections × 4 + 90, errors + 3"
+    },
+    {
+      "start": 19506,
+      "end": 19532,
+      "text": "44 điểm, 17:39–18:22 UTC"
+    },
+    {
+      "start": 19476,
+      "end": 19504,
+      "text": "mysql_query_spike.csv; QPS × 5 + 100"
+    },
+    {
+      "start": 19426,
+      "end": 19453,
+      "text": "432 điểm test; đo FP"
+    },
+    {
+      "start": 19377,
+      "end": 19424,
+      "text": "mysql_normal.csv; không chèn sự kiện"
+    },
+    {
+      "start": 19268,
+      "end": 19312,
+      "text": "Bảng 3.2. Bốn kịch bản đã thực hiện"
+    },
+    {
+      "start": 18832,
+      "end": 19266,
+      "text": "K1 mô phỏng nền dao động tự nhiên để đo FP. K2 chỉ tăng QPS; K3 tăng kết nối kèm số kết nối thất bại; K4 tăng thời gian phản hồi kèm truy vấn chậm. Các sự kiện được chèn hoàn toàn sau mốc train. Nhãn, thời gian bắt đầu/kết thúc và công thức chèn được cố định trước khi chạy mô hình, không chỉnh lại theo dự đoán."
+    },
+    {
+      "start": 18362,
+      "end": 18830,
+      "text": "Quy trình thực hiện gồm: đọc và kiểm tra CSV; sắp xếp theo thời gian; lấy 70% đầu làm train và 30% cuối làm test; fit StandardScaler và mô hình trên train; dự đoán test; tính kết quả mô hình gốc; áp dụng bộ lọc vận hành; lưu CSV dự đoán, JSON cấu hình/đánh giá và báo cáo. Lần chạy dùng tham số cố định, random_state=42 cho Isolation Forest; không tìm tham số trên test và chưa có một tập validation riêng."
+    },
+    {
+      "start": 18212,
+      "end": 18321,
+      "text": "Máy đo có CPU Intel Core i7-11800H @ 2,30 GHz, 16 bộ xử lý logic; hệ điều hành trả tổng RAM vật lý khoảng 7,71 GiB. Thông tin CPU lấy từ registry, RAM từ GlobalMemoryStatusEx; không suy đoán cấu hình MySQL. Thời gian mô hình được đo bằng perf_counter trong một lượt chạy cho mỗi bộ dữ liệu, nên có ảnh hưởng khởi tạo và bộ nhớ đệm; chưa phải benchmark lặp nhiều lần."
+    },
+    {
+      "start": 17761,
+      "end": 18210,
+      "text": "Lần chạy ngày 14/11/2026 sử dụng Windows, Python 3.10.9 trong môi trường C:\\Users\\User\\DACN\\.venv; NumPy 2.2.6, pandas 2.3.3, scikit-learn 1.7.2, Streamlit 1.65.0, FastAPI 0.162.0, Plotly 7.1.0 và PyMySQL 1.2.3. Các estimator học máy được triển khai bằng scikit-learn [12]; MAD là hàm dùng NumPy trong project. Không sử dụng PyOD trong lần thực nghiệm này."
+    },
+    {
+      "start": 17445,
+      "end": 17699,
+      "text": "Nhãn label dùng 1 cho bình thường và −1 cho bất thường, nhất quán với dự đoán của các estimator. label và scenario không được đưa vào đặc trưng hay dùng để lọc train. Nhãn chỉ được đối chiếu với 432 dự đoán test khi tính TP, FP, FN, TN, Precision, Recall và F1; lớp dương về mặt đánh giá là bất thường −1."
+    },
+    {
+      "start": 17073,
+      "end": 17443,
+      "text": "StandardScaler chỉ fit trên 1.008 dòng train rồi transform 432 dòng test. Mỗi vector đầu vào gồm queries_per_second, connections, response_time_ms, slow_queries và connection_errors. Lần chạy dùng include_time=False, không dùng đặc trưng lịch, cửa sổ trượt hoặc giá trị tương lai. Các kỹ thuật cửa sổ ở Chương 2 là hướng khảo sát, chưa phải thực nghiệm đã hoàn thành."
+    },
+    {
+      "start": 16662,
+      "end": 17071,
+      "text": "Pipeline MySQL kiểm tra đủ năm chỉ số, giá trị hữu hạn không âm, thời gian hợp lệ và duy nhất rồi sắp xếp theo timestamp. Dữ liệu sai bị từ chối; không tự điền 0, nội suy hoặc loại hàng. Trong bốn CSV được đánh giá, không có dòng bị loại. Luồng CSV một chỉ số có chính sách làm sạch riêng; không trộn số đếm của hai luồng."
+    },
+    {
+      "start": 16496,
+      "end": 16617,
+      "text": "Manifest docs/mysql_datasets_manifest.json lưu seed, hash của bốn CSV, các phép biến đổi và phạm vi sự kiện. K1 có 0 điểm bất thường; K2 và K3 có 44 điểm mỗi bộ; K4 có 43 điểm. Mỗi tệp đều có 1.008 dòng train bình thường và 432 dòng test; tỷ lệ bất thường trên test tương ứng 0%, 10,19%, 10,19% và 9,95%. Các tiền tố train giống nhau hoàn toàn."
+    },
+    {
+      "start": 16161,
+      "end": 16494,
+      "text": "Bộ CPU EC2 công khai của NAB được giữ làm luồng tham chiếu bổ sung [8], [11]. Chuỗi ec2_cpu_utilization_24ae8d.csv có 4.032 điểm cách nhau 5 phút; bản lưu trong project có hash SHA-256 ab446fbd8b9f37507eb2fdb06315826d8daeef02e241133ce06e0ee571ba53d9. Dữ liệu CPU này không xác lập tải cơ sở dữ liệu và không được dùng thay cho kết quả MySQL tổng hợp trong Chương 4. Đánh giá theo nhãn điểm của notebook cũng không phải NAB score theo cửa sổ của bài báo."
+    },
+    {
+      "start": 16128,
+      "end": 16159,
+      "text": "Chỉ dùng đánh giá; loại khỏi đặc trưng"
+    },
+    {
+      "start": 16108,
+      "end": 16126,
+      "text": "1 bình thường; −1 bất thường"
+    },
+    {
+      "start": 16096,
+      "end": 16106,
+      "text": "label"
+    },
+    {
+      "start": 16066,
+      "end": 16093,
+      "text": "SELECT 1; mili giây"
+    },
+    {
+      "start": 16038,
+      "end": 16064,
+      "text": "Thời gian khứ hồi của probe"
+    },
+    {
+      "start": 16022,
+      "end": 16036,
+      "text": "response_time_ms"
+    },
+    {
+      "start": 15992,
+      "end": 16019,
+      "text": "ΔAborted_connects, sự kiện/khoảng"
+    },
+    {
+      "start": 15970,
+      "end": 15990,
+      "text": "Kết nối thất bại trong khoảng"
+    },
+    {
+      "start": 15944,
+      "end": 15968,
+      "text": "connection_errors"
+    },
+    {
+      "start": 15918,
+      "end": 15941,
+      "text": "ΔSlow_queries, sự kiện/khoảng"
+    },
+    {
+      "start": 15894,
+      "end": 15916,
+      "text": "Truy vấn chậm trong khoảng"
+    },
+    {
+      "start": 15872,
+      "end": 15892,
+      "text": "slow_queries"
+    },
+    {
+      "start": 15851,
+      "end": 15869,
+      "text": "Threads_connected, kết nối"
+    },
+    {
+      "start": 15815,
+      "end": 15832,
+      "text": "connections"
+    },
+    {
+      "start": 15799,
+      "end": 15812,
+      "text": "QPS; thu thật: ΔQuestions/Δt"
+    },
+    {
+      "start": 15760,
+      "end": 15775,
+      "text": "queries_per_second"
+    },
+    {
+      "start": 15618,
+      "end": 15666,
+      "text": "Bảng 3.1. Schema thực tế của CSV giám sát MySQL"
+    },
+    {
+      "start": 15198,
+      "end": 15616,
+      "text": "Ý nghĩa chỉ số được đối chiếu tài liệu MySQL: SHOW GLOBAL STATUS cung cấp các biến trạng thái toàn cục [9], [10]. Collector hiện dùng Questions để tính QPS, Threads_connected để lấy số kết nối, ΔSlow_queries và ΔAborted_connects để đếm sự kiện trong khoảng lấy mẫu. response_time_ms là thời gian khứ hồi của SELECT 1 qua kết nối giám sát, gồm độ trễ mạng, không phải trung bình độ trễ của mọi truy vấn nghiệp vụ. Dữ liệu tổng hợp mô phỏng cùng schema; lần đánh giá này không cần một phiên bản MySQL server."
+    },
+    {
+      "start": 14798,
+      "end": 15196,
+      "text": "Bộ thực nghiệm chính gồm mysql_normal.csv (K1), mysql_query_spike.csv (K2), mysql_connection_spike.csv (K3) và mysql_latency_spike.csv (K4). Các tệp được sinh bởi scripts/generate_mysql_demo.py, seed 20261107, mỗi tệp 1.440 dòng từ 00:00 đến 23:59 UTC ngày 01/10/2026, chu kỳ một phút. Đây là dữ liệu tổng hợp có nhãn theo các phép biến đổi được định nghĩa trước; không sử dụng nhãn dự đoán làm nhãn thật."
+    },
+    {
+      "start": 14701,
+      "end": 14701,
+      "text": "2.4. Kết quả định lượng từ các nghiên cứu liên quan\n2.4.1. AUC và thời gian trong bài Isolation Forest\nBảng 2.3 ghi lại bốn bộ dữ liệu trong Bảng 3, trang 419 của Liu và cộng sự. IF dùng 100 cây, 256 mẫu/cây; LOF dùng k = 10, chạy đơn luồng trên CPU 2,3 GHz/Linux. Đây là kết quả công bố, không phải lần chạy ANOMALY LAB [3].\nBảng 2.3. AUC và tổng thời gian công bố của IF/LOF; nguồn [3, Bảng 3].\n\nThời gian trong bảng là chi phí của thiết lập bài báo; AUC không phải Accuracy hay F1. IF có AUC cao hơn LOF ở ba bộ được trích, nhưng thấp hơn ở Ionosphere. Không áp các giá trị này vào dữ liệu MySQL hoặc suy ra IF luôn tốt hơn.\n2.4.2. Điểm NAB trong nghiên cứu phát hiện trực tuyến\nAhmad và cộng sự công bố điểm NAB v1.0 theo ba hồ sơ thưởng/phạt. NAB score xét thời điểm phát hiện trong cửa sổ và FP/FN; detector hoàn hảo được chuẩn hóa thành 100, detector không cảnh báo thành 0. Các điểm dưới đây không phải phần trăm độ chính xác [8].\nBảng 2.4. Điểm NAB v1.0 đã công bố; nguồn [8, Bảng 1].\n\nBảng 2 của bài báo còn đo độ trễ trung bình trên một tệp 22.695 bản ghi, ba lượt chạy, máy i7 2,6 GHz tám lõi: HTM 11,3 ms/điểm, Relative Entropy 0,05 ms/điểm. Không so sánh trực tiếp các giá trị này với thời gian fit/predict của Chương 4 do khác phần cứng, dữ liệu và giao thức [8].\n"
+    },
+    {
+      "start": 13871,
+      "end": 14329,
+      "text": "Precision cho biết trong các cảnh báo có bao nhiêu điểm đúng; Recall đo tỷ lệ bất thường được tìm thấy; F1 cân bằng hai chỉ số. Khi lớp bất thường hiếm, cần đọc thêm FP, FN và confusion matrix thay vì chỉ Accuracy. Trong lần chạy này, phần mềm trả 0 khi mẫu số bằng 0; báo cáo ghi N/A đối với Precision/Recall/F1 trên K1 vì K1 không có điểm bất thường để đánh giá khả năng phát hiện."
+    },
+    {
+      "start": 13813,
+      "end": 13869,
+      "text": "F1 = 2 × Precision × Recall / (Precision + Recall) (2.5)"
+    },
+    {
+      "start": 12965,
+      "end": 13001,
+      "text": "Nhạy thay đổi mức nền; cần chính sách khi MAD = 0"
+    },
+    {
+      "start": 12917,
+      "end": 12938,
+      "text": "Độ lệch so với trung vị/MAD"
+    },
+    {
+      "start": 12908,
+      "end": 12915,
+      "text": "MAD/robust Z-score"
+    },
+    {
+      "start": 12247,
+      "end": 12614,
+      "text": "MAD là đường cơ sở thống kê để đối chiếu với ba mô hình học máy. Trong chế độ DBMS, cả bốn phương pháp nhận cùng năm đặc trưng và dữ liệu được StandardScaler chuẩn hóa theo train. Các bộ demo có đợt tăng biên độ được cố ý tách rõ nên phù hợp kiểm tra chức năng, chưa đủ để kết luận mô hình nào tốt hơn trên tải MySQL thực."
+    },
+    {
+      "start": 11898,
+      "end": 12246,
+      "text": "Trong code, median/MAD được học từ train trên từng đặc trưng; một điểm bị mô hình MAD gắn cờ khi maxⱼ|Mⱼ(x)| ≥ 3,5. Khi MAD bằng 0, chương trình dùng dung sai epsilon hữu hạn học từ nền train và công khai chính sách này trong metadata. Đây là lựa chọn triển khai cho nền hằng số, không phải công thức Z-score cổ điển với σ = 0."
+    },
+    {
+      "start": 11862,
+      "end": 11897,
+      "text": "MAD = median(|xᵢ − median(x)|); Mⱼ(x) = 0,6745(xⱼ − median_train,ⱼ)/MAD_train,ⱼ (2.2)"
+    },
+    {
+      "start": 11525,
+      "end": 11861,
+      "text": "Z-score cổ điển dùng trung bình và độ lệch chuẩn: Z = (x − μ)/σ. Thực nghiệm của đề tài dùng biến thể robust Z-score dựa trên trung vị và độ lệch tuyệt đối trung vị (MAD), giúp giảm ảnh hưởng của cực trị. Công thức modified Z-score với hệ số 0,6745 và mốc tham khảo 3,5 được mô tả trong NIST/SEMATECH e-Handbook [7]."
+    },
+    {
+      "start": 11481,
+      "end": 11524,
+      "text": "2.2.4. Phương pháp thống kê cơ sở: MAD/robust Z-score"
+    },
+    {
+      "start": 10803,
+      "end": 11140,
+      "text": "One-Class SVM học miền quyết định mô tả dữ liệu thông thường; các điểm nằm ngoài miền được gắn nhãn bất thường. Với kernel RBF, mô hình tạo ranh giới phi tuyến. Tham số ν là cận trên của tỷ lệ lỗi huấn luyện và cận dưới của tỷ lệ vector hỗ trợ trong điều kiện lý thuyết của mô hình; γ điều khiển kernel. Giá trị ν không bảo đảm tỷ lệ cảnh báo trên test bằng chính nó [6]."
+    },
+    {
+      "start": 10442,
+      "end": 10746,
+      "text": "Trong Scikit-learn, khi cần huấn luyện trên một giai đoạn và dự đoán trên dữ liệu tương lai chưa xuất hiện, phải khai báo LocalOutlierFactor(novelty=True) trước khi fit. Chế độ mặc định sử dụng fit_predict trên chính tập dữ liệu và không phù hợp để tuyên bố đã dự đoán trên một tập kiểm thử độc lập [5]."
+    },
+    {
+      "start": 9862,
+      "end": 10118,
+      "text": "Local Outlier Factor do Breunig và cộng sự đề xuất năm 2000. Ý tưởng chính là so sánh mật độ lân cận của một điểm với mật độ của các điểm xung quanh. Nếu một điểm nằm trong vùng thưa hơn đáng kể so với hàng xóm, nó có thể được xem là bất thường cục bộ [4]."
+    },
+    {
+      "start": 8820,
+      "end": 9142,
+      "text": "Isolation Forest được Liu, Ting và Zhou giới thiệu năm 2008. Khác với các phương pháp mô hình hóa trực tiếp dữ liệu bình thường, thuật toán tạo nhiều cây phân tách ngẫu nhiên để cô lập các quan sát. Một điểm khác biệt lớn thường bị tách khỏi các điểm còn lại sau ít phép chia hơn, tương ứng đường đi trên cây ngắn hơn [3]."
+    },
+    {
+      "start": 6370,
+      "end": 6831,
+      "text": "Bất thường điểm là quan sát lệch rõ rệt so với mức hoạt động lân cận, ví dụ số truy vấn/giây tăng mạnh tại một thời điểm. Bất thường ngữ cảnh là quan sát chỉ trở nên bất thường ở thời điểm hoặc trạng thái xác định; cùng một mức tải có thể bình thường ban ngày nhưng bất thường vào ban đêm. Bất thường tập thể là một đoạn chuỗi có dạng khác thường dù từng điểm riêng lẻ không quá cực đoan, như thời gian truy vấn duy trì ở mức hơi cao trong nhiều phút liên tiếp [1], [2]."
+    },
+    {
+      "start": 5922,
+      "end": 6369,
+      "text": "Chuỗi thời gian là dãy quan sát xₜ được ghi nhận theo thứ tự thời gian t, trong đó mỗi mẫu có thể là số thực hoặc vector các chỉ số vận hành. Khác với dữ liệu bảng độc lập, chuỗi thời gian thường có tự tương quan: giá trị hiện tại chịu ảnh hưởng của giá trị trước đó. Ngoài ra có thể xuất hiện xu hướng, mùa vụ, nhiễu và thay đổi chế độ vận hành. Vì vậy, khi xem một giá trị có bất thường hay không cần xét cả bối cảnh mà giá trị đó xuất hiện [2]."
+    },
+    {
+      "start": 5575,
+      "end": 5794,
+      "text": "Kết quả được ghi nhận cùng phiên bản thư viện, cấu hình mô hình, hash dữ liệu và tệp dự đoán để kiểm tra lại. Các số liệu từ bài báo được trình bày riêng trong mục 2.4; kết quả tự chạy trên dữ liệu tổng hợp nằm ở Chương 4. Hai nhóm số liệu có phạm vi đánh giá khác nhau."
+    },
+    {
+      "start": 5251,
+      "end": 5574,
+      "text": "Dữ liệu được phân tích theo thứ tự thời gian, không xáo trộn. Mỗi mô hình chỉ học phần đầu của từng CSV và dự đoán phần cuối. Công cụ có thêm chức năng thu chỉ số MySQL theo đợt bằng tài khoản chỉ đọc, nhưng lần đánh giá được báo cáo chưa sử dụng kết nối máy chủ thật. Không diễn giải chức năng này thành một dịch vụ giám sát liên tục."
+    },
+    {
+      "start": 4776,
+      "end": 5250,
+      "text": "Đề tài triển khai và đánh giá bốn phương pháp trên năm chỉ số MySQL: MAD/robust Z-score, Isolation Forest, LOF và One-Class SVM. Thực nghiệm định lượng trong báo cáo dùng bốn CSV tổng hợp tái lập bằng seed cố định, không phải log của máy chủ MySQL thật. Python, scikit-learn, pandas và NumPy xử lý dữ liệu; FastAPI cung cấp API; Streamlit và Plotly trình bày kết quả. PostgreSQL và đánh giá trên tải thật được giữ làm hướng phát triển."
+    },
+    {
+      "start": 1576,
+      "end": 1981,
+      "text": "Phát hiện bất thường là phương pháp tìm ra các quan sát không phù hợp với hành vi thông thường của dữ liệu. Các thuật toán học máy không giám sát có thể phát hiện mẫu hiếm hoặc cấu trúc phân bố khác thường ngay cả khi không có nhiều nhãn sự cố. Khi kết hợp dữ liệu hoạt động DBMS dưới dạng chuỗi thời gian, hướng tiếp cận này có tiềm năng bổ sung cho công tác giám sát thủ công và ngưỡng cố định [1], [2]."
+    },
+    {
+      "start": 255,
+      "end": 255,
+      "text": "NGHIÊN CỨU THUẬT TOÁN PHÁT HIỆN BẤT THƯỜNG TRONG HOẠT ĐỘNG CỦA HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU"
+    }
+  ]
+}
